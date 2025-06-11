@@ -7,11 +7,14 @@ const MessagesPage = () => {
   const [conversations, setConversations] = useState([]);
   const [messages, setMessages] = useState([]);
   const [selectedConversation, setSelectedConversation] = useState(null);
-  const [newMessage, setNewMessage] = useState('');
+const [newMessage, setNewMessage] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [sendingMessage, setSendingMessage] = useState(false);
   const [showMobileChat, setShowMobileChat] = useState(false);
+  const [showNewChatModal, setShowNewChatModal] = useState(false);
+  const [newChatForm, setNewChatForm] = useState({ name: '', avatar: '' });
+  const [creatingChat, setCreatingChat] = useState(false);
 
   useEffect(() => {
     loadConversations();
@@ -80,9 +83,40 @@ const MessagesPage = () => {
     } catch (error) {
       toast.error('Failed to send message');
     } finally {
-      setSendingMessage(false);
+setSendingMessage(false);
     }
   };
+
+  const createNewChat = async (e) => {
+    e.preventDefault();
+    if (!newChatForm.name.trim()) return;
+
+    try {
+      setCreatingChat(true);
+      const newChat = await ChatService.create({
+        name: newChatForm.name.trim(),
+        avatar: newChatForm.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(newChatForm.name)}&background=7C3AED&color=fff`,
+        participants: ['current-user']
+      });
+      
+      // Add to conversations list
+      setConversations(prev => [newChat, ...prev]);
+      
+      // Select the new conversation
+      setSelectedConversation(newChat);
+      setShowMobileChat(true);
+      
+      // Reset form and close modal
+      setNewChatForm({ name: '', avatar: '' });
+      setShowNewChatModal(false);
+      
+      toast.success('New conversation created');
+    } catch (error) {
+      toast.error('Failed to create conversation');
+    } finally {
+      setCreatingChat(false);
+    }
+};
 
   const selectConversation = (conversation) => {
     setSelectedConversation(conversation);
@@ -112,15 +146,94 @@ const MessagesPage = () => {
     );
   }
 
-  return (
+return (
+    <>
+      {/* New Chat Modal */}
+      {showNewChatModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-surface rounded-lg border border-gray-700 w-full max-w-md">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-white">New Conversation</h2>
+                <button
+                  onClick={() => {
+                    setShowNewChatModal(false);
+                    setNewChatForm({ name: '', avatar: '' });
+                  }}
+                  className="text-gray-400 hover:text-white"
+                >
+                  ×
+                </button>
+              </div>
+              
+              <form onSubmit={createNewChat} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Contact Name
+                  </label>
+                  <input
+                    type="text"
+                    value={newChatForm.name}
+                    onChange={(e) => setNewChatForm(prev => ({ ...prev, name: e.target.value }))}
+                    placeholder="Enter contact name..."
+                    className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-primary"
+                    required
+                    disabled={creatingChat}
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Avatar URL (optional)
+                  </label>
+                  <input
+                    type="url"
+                    value={newChatForm.avatar}
+                    onChange={(e) => setNewChatForm(prev => ({ ...prev, avatar: e.target.value }))}
+                    placeholder="https://example.com/avatar.jpg"
+                    className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-primary"
+                    disabled={creatingChat}
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Leave empty to generate an avatar automatically</p>
+                </div>
+                
+                <div className="flex space-x-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowNewChatModal(false);
+                      setNewChatForm({ name: '', avatar: '' });
+                    }}
+                    className="flex-1 px-4 py-2 border border-gray-600 text-gray-300 rounded-lg hover:bg-gray-700 transition-colors"
+                    disabled={creatingChat}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={!newChatForm.name.trim() || creatingChat}
+                    className="flex-1 px-4 py-2 bg-gradient-to-r from-primary to-secondary text-white rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {creatingChat ? 'Creating...' : 'Create'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
     <div className="h-full flex bg-background">
       {/* Conversations List */}
       <div className={`w-full md:w-80 bg-surface border-r border-gray-700 flex flex-col ${showMobileChat ? 'hidden md:flex' : 'flex'}`}>
         {/* Header */}
-        <div className="p-4 border-b border-gray-700">
+<div className="p-4 border-b border-gray-700">
           <div className="flex items-center justify-between mb-4">
             <h1 className="text-xl font-bold text-white">Messages</h1>
-            <button className="p-2 hover:bg-gray-700 rounded-lg transition-colors">
+            <button 
+              onClick={() => setShowNewChatModal(true)}
+              className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
+            >
               <Plus className="w-5 h-5 text-gray-300" />
             </button>
           </div>
@@ -283,7 +396,8 @@ const MessagesPage = () => {
           </div>
         )}
       </div>
-    </div>
+</div>
+    </>
   );
 };
 
