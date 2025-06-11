@@ -185,42 +185,50 @@ const FollowersModal = ({ isOpen, onClose, userId, initialTab = 'followers' }) =
                     {searchQuery ? 'No users found' : `No ${activeTab} yet`}
                   </p>
                 </div>
-              ) : (
+) : (
                 <div className="p-4 space-y-3">
-                  {filteredUsers.map((user) => (
-                    <motion.div
-                      key={user.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="flex items-center justify-between p-3 bg-background/50 rounded-xl hover:bg-background/70 transition-colors"
-                    >
-                      <div className="flex items-center space-x-3">
-                        <Avatar
-                          src={user.avatar}
-                          alt={user.displayName}
-                          size="sm"
-                        />
-                        <div>
-                          <p className="font-medium text-white">{user.displayName}</p>
-                          <p className="text-sm text-gray-400">@{user.username}</p>
-                        </div>
-                      </div>
-                      <Button
-                        onClick={() => handleFollow(user.id)}
-                        disabled={followLoading[user.id]}
-                        className="px-4 py-2 bg-primary/20 hover:bg-primary/30 text-primary border border-primary/50 rounded-xl font-medium transition-colors disabled:opacity-50"
+                  {filteredUsers.map((user) => {
+                    const isCurrentUserFollowing = following.some(f => f.id === user.id);
+                    
+                    return (
+                      <motion.div
+                        key={user.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="flex items-center justify-between p-3 bg-background/50 rounded-xl hover:bg-background/70 transition-colors"
                       >
-                        {followLoading[user.id] ? (
-                          <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                        ) : (
-                          <>
-                            <UserPlus size={16} className="mr-2" />
-                            Follow
-                          </>
-                        )}
-                      </Button>
-                    </motion.div>
-                  ))}
+                        <div className="flex items-center space-x-3">
+                          <Avatar
+                            src={user.avatar}
+                            alt={user.displayName}
+                            size="sm"
+                          />
+                          <div>
+                            <p className="font-medium text-white">{user.displayName}</p>
+                            <p className="text-sm text-gray-400">@{user.username}</p>
+                          </div>
+                        </div>
+                        <Button
+                          onClick={() => isCurrentUserFollowing ? handleUnfollow(user.id) : handleFollow(user.id)}
+                          disabled={followLoading[user.id]}
+                            className={`px-4 py-2 rounded-xl font-medium transition-colors disabled:opacity-50 ${
+                              isCurrentUserFollowing
+                                ? 'bg-gray-600 hover:bg-gray-700 text-white border border-gray-500'
+                                : 'bg-primary/20 hover:bg-primary/30 text-primary border border-primary/50'
+                            }`}
+                          >
+                            {followLoading[user.id] ? (
+                              <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                            ) : (
+                              <>
+                                <UserPlus size={16} className="mr-2" />
+                                {isCurrentUserFollowing ? 'Unfollow' : 'Follow'}
+                              </>
+)}
+                          </Button>
+                      </motion.div>
+                    );
+                  })}
                 </div>
               )}
             </div>
