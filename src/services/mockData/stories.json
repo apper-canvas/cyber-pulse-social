@@ -1,0 +1,52 @@
+[
+  {
+    "id": "story_1",
+    "userId": "user_1",
+    "imageUrl": "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=400&h=700&fit=crop",
+    "text": "Beautiful sunset today! 🌅",
+    "createdAt": "2024-01-15T18:30:00Z",
+    "expiresAt": "2024-01-16T18:30:00Z",
+    "views": ["user_2", "user_3"],
+    "isDeleted": false
+  },
+  {
+    "id": "story_2",
+    "userId": "user_2",
+    "imageUrl": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=700&fit=crop",
+    "text": "Mountain hiking adventure",
+    "createdAt": "2024-01-15T16:45:00Z",
+    "expiresAt": "2024-01-16T16:45:00Z",
+    "views": ["user_1", "user_3", "user_4"],
+    "isDeleted": false
+  },
+  {
+    "id": "story_3",
+    "userId": "user_3",
+    "imageUrl": "https://images.unsplash.com/photo-1551698618-1dfe5d97d256?w=400&h=700&fit=crop",
+    "text": "Coffee time ☕",
+    "createdAt": "2024-01-15T14:20:00Z",
+    "expiresAt": "2024-01-16T14:20:00Z",
+    "views": ["user_1", "user_2"],
+    "isDeleted": false
+  },
+  {
+    "id": "story_4",
+    "userId": "user_4",
+    "imageUrl": "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=400&h=700&fit=crop",
+    "text": "New art project 🎨",
+    "createdAt": "2024-01-15T12:15:00Z",
+    "expiresAt": "2024-01-16T12:15:00Z",
+    "views": ["user_1", "user_2", "user_3"],
+    "isDeleted": false
+  },
+  {
+    "id": "story_5",
+    "userId": "user_5",
+    "imageUrl": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=700&fit=crop",
+    "text": "Workout complete! 💪",
+    "createdAt": "2024-01-15T10:30:00Z",
+    "expiresAt": "2024-01-16T10:30:00Z",
+    "views": ["user_1", "user_3"],
+    "isDeleted": false
+  }
+]

@@ -1,6 +1,17 @@
-export { default as PostService } from './api/postService';
-export { default as UserService } from './api/userService';
-export { default as CommentService } from './api/commentService';
-export { default as FollowService } from './api/followService';
-export { default as ChatService } from './api/chatService';
-export { default as MessageService } from './api/messageService';
+import PostService from './api/postService';
+import UserService from './api/userService';
+import CommentService from './api/commentService';
+import FollowService from './api/followService';
+import MessageService from './api/messageService';
+import ChatService from './api/chatService';
+import StoryService from './api/storyService';
+
+export {
+  PostService,
+  UserService,
+  CommentService,
+  FollowService,
+  MessageService,
+  ChatService,
+  StoryService
+};
