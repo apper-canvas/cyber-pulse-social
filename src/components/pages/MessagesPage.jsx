@@ -120,34 +120,29 @@ const [searchResults, setSearchResults] = useState([]);
     }, 300);
   };
 
-  const selectUser = (user) => {
-    setNewChatForm({
-      name: user.displayName || user.username,
-      avatar: user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || user.username)}&background=7C3AED&color=fff`
-    });
-    setSearchQuery('');
-    setShowSearchResults(false);
-    setSearchResults([]);
-  };
-
-  const resetNewChatModal = () => {
-    setShowNewChatModal(false);
-    setNewChatForm({ name: '', avatar: '' });
-    setSearchQuery('');
-    setSearchResults([]);
-    setShowSearchResults(false);
-};
-
-  const createNewChat = async (e) => {
-    e.preventDefault();
-    if (!newChatForm.name.trim()) return;
-
+const selectUser = async (user) => {
     try {
       setCreatingChat(true);
+      
+      // Check if conversation with this user already exists
+      const existingConversation = conversations.find(conv => 
+        conv.name === (user.displayName || user.username)
+      );
+      
+      if (existingConversation) {
+        // Select existing conversation
+        setSelectedConversation(existingConversation);
+        setShowMobileChat(true);
+        resetNewChatModal();
+        toast.success('Conversation opened');
+        return;
+      }
+      
+      // Create new conversation
       const newChat = await ChatService.create({
-        name: newChatForm.name.trim(),
-        avatar: newChatForm.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(newChatForm.name)}&background=7C3AED&color=fff`,
-        participants: ['current-user']
+        name: user.displayName || user.username,
+        avatar: user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || user.username)}&background=7C3AED&color=fff`,
+        participants: ['current-user', user.id]
       });
       
       // Add to conversations list
@@ -157,7 +152,7 @@ const [searchResults, setSearchResults] = useState([]);
       setSelectedConversation(newChat);
       setShowMobileChat(true);
       
-      // Reset form and close modal
+      // Reset modal
       resetNewChatModal();
       
       toast.success('New conversation created');
@@ -166,6 +161,15 @@ const [searchResults, setSearchResults] = useState([]);
     } finally {
       setCreatingChat(false);
     }
+  };
+
+  const resetNewChatModal = () => {
+    setShowNewChatModal(false);
+    setNewChatForm({ name: '', avatar: '' });
+    setSearchQuery('');
+    setSearchResults([]);
+    setShowSearchResults(false);
+    setCreatingChat(false);
   };
 
   const selectConversation = (conversation) => {
@@ -197,122 +201,90 @@ if (loading) {
   }
 return (
     <>
-      {/* New Chat Modal */}
+{/* New Chat Modal */}
       {showNewChatModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-surface rounded-lg border border-gray-700 w-full max-w-md">
             <div className="p-6">
-<div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-white">New Conversation</h2>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-white">Start New Chat</h2>
                 <button
                   onClick={resetNewChatModal}
                   className="text-gray-400 hover:text-white"
+                  disabled={creatingChat}
                 >
                   ×
                 </button>
               </div>
               
-              <form onSubmit={createNewChat} className="space-y-4">
-                {/* Search Users */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Search Users
-                  </label>
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                    <input
-                      type="text"
-                      value={searchQuery}
-                      onChange={handleSearchChange}
-                      placeholder="Search by name or ID..."
-                      className="w-full pl-10 pr-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-primary"
-                      disabled={creatingChat}
-                    />
-                    {searchLoading && (
-                      <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
-                      </div>
-                    )}
-                  </div>
-                  
-                  {/* Search Results */}
-                  {showSearchResults && (
-                    <div className="mt-2 max-h-48 overflow-y-auto bg-gray-800 border border-gray-600 rounded-lg">
-                      {searchResults.length === 0 ? (
-                        <div className="p-3 text-center text-gray-400">
-                          <User className="w-6 h-6 mx-auto mb-2" />
-                          <p className="text-sm">No users found</p>
-                        </div>
-                      ) : (
-                        searchResults.map((user) => (
-                          <div
-                            key={user.id}
-                            onClick={() => selectUser(user)}
-                            className="flex items-center p-3 hover:bg-gray-700 cursor-pointer transition-colors"
-                          >
-                            <img
-                              src={user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || user.username)}&background=7C3AED&color=fff`}
-                              alt={user.displayName || user.username}
-                              className="w-8 h-8 rounded-full"
-                            />
-                            <div className="ml-3">
-                              <p className="text-white font-medium">{user.displayName || user.username}</p>
-                              <p className="text-gray-400 text-sm">@{user.username}</p>
-                            </div>
-                          </div>
-                        ))
-                      )}
-                    </div>
-                  )}
-</div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Contact Name
-                  </label>
+              {/* Search Users */}
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Search Users
+                </label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                   <input
                     type="text"
-                    value={newChatForm.name}
-                    onChange={(e) => setNewChatForm(prev => ({ ...prev, name: e.target.value }))}
-                    placeholder="Enter contact name..."
-                    className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-primary"
+                    value={searchQuery}
+                    onChange={handleSearchChange}
+                    placeholder="Search by name or ID..."
+                    className="w-full pl-10 pr-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-primary"
                     disabled={creatingChat}
                   />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    Avatar URL (optional)
-                  </label>
-                  <input
-                    type="url"
-                    value={newChatForm.avatar}
-                    onChange={(e) => setNewChatForm(prev => ({ ...prev, avatar: e.target.value }))}
-                    placeholder="https://example.com/avatar.jpg"
-                    className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-primary"
-                    disabled={creatingChat}
-                  />
-                  <p className="text-xs text-gray-500 mt-1">Leave empty to generate an avatar automatically</p>
+                  {(searchLoading || creatingChat) && (
+                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                    </div>
+                  )}
                 </div>
                 
-                <div className="flex space-x-3 pt-4">
-                  <button
-                    type="button"
-                    onClick={resetNewChatModal}
-                    className="flex-1 px-4 py-2 border border-gray-600 text-gray-300 rounded-lg hover:bg-gray-700 transition-colors"
-                    disabled={creatingChat}
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={!newChatForm.name.trim() || creatingChat}
-                    className="flex-1 px-4 py-2 bg-gradient-to-r from-primary to-secondary text-white rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {creatingChat ? 'Creating...' : 'Create'}
-                  </button>
-                </div>
-              </form>
+                {/* Search Results */}
+                {showSearchResults && (
+                  <div className="mt-2 max-h-48 overflow-y-auto bg-gray-800 border border-gray-600 rounded-lg">
+                    {searchResults.length === 0 ? (
+                      <div className="p-3 text-center text-gray-400">
+                        <User className="w-6 h-6 mx-auto mb-2" />
+                        <p className="text-sm">No users found</p>
+                      </div>
+                    ) : (
+                      searchResults.map((user) => (
+                        <div
+                          key={user.id}
+                          onClick={() => !creatingChat && selectUser(user)}
+                          className={`flex items-center p-3 transition-colors ${
+                            creatingChat 
+                              ? 'opacity-50 cursor-not-allowed' 
+                              : 'hover:bg-gray-700 cursor-pointer'
+                          }`}
+                        >
+                          <img
+                            src={user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || user.username)}&background=7C3AED&color=fff`}
+                            alt={user.displayName || user.username}
+                            className="w-8 h-8 rounded-full"
+                          />
+                          <div className="ml-3">
+                            <p className="text-white font-medium">{user.displayName || user.username}</p>
+                            <p className="text-gray-400 text-sm">@{user.username}</p>
+                          </div>
+                          {creatingChat && (
+                            <div className="ml-auto">
+                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                            </div>
+                          )}
+                        </div>
+                      ))
+                    )}
+                  </div>
+                )}
+                
+                {!showSearchResults && !searchQuery.trim() && (
+                  <div className="mt-2 p-4 text-center text-gray-400">
+                    <User className="w-8 h-8 mx-auto mb-2" />
+                    <p className="text-sm">Start typing to search for users</p>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
