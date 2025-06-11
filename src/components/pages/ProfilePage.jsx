@@ -66,7 +66,7 @@ loadData();
       setFollowers(userFollowers);
       setFollowing(userFollowing);
 
-      // Check if current user is following this profile
+// Check if current user is following this profile
       if (!isOwnProfile || userId !== currentUserId) {
         const followingStatus = await FollowService.isFollowing(currentUserId, targetUser.id);
         setIsFollowing(followingStatus);

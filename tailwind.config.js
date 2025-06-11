@@ -21,9 +21,9 @@ theme: {
         sans: ['Inter', 'ui-sans-serif', 'system-ui'],
         display: ['Plus Jakarta Sans', 'ui-sans-serif', 'system-ui']
       },
-      backdropBlur: {
+backdropBlur: {
         xs: '2px'
-},
+      },
       animation: {
         'slide-in': 'slideIn 0.3s ease-out',
         'slide-out': 'slideOut 0.3s ease-out',
