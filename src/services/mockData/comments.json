@@ -1,0 +1,47 @@
+[
+  {
+    "id": "comment_1",
+    "postId": "post_1",
+    "userId": "user_2",
+    "content": "This looks amazing! Love the clean implementation. Can't wait to try out the new notifications feature.",
+    "parentId": null,
+    "likes": ["user_1", "user_3"],
+    "createdAt": "2024-01-15T11:00:00Z"
+  },
+  {
+    "id": "comment_2",
+    "postId": "post_1",
+    "userId": "user_3",
+    "content": "The real-time aspect must have been challenging to implement. Great work!",
+    "parentId": null,
+    "likes": ["user_1"],
+    "createdAt": "2024-01-15T11:15:00Z"
+  },
+  {
+    "id": "comment_3",
+    "postId": "post_2",
+    "userId": "user_1",
+    "content": "The color palette looks fantastic! Really love the nature-inspired approach. Looking forward to the case study.",
+    "parentId": null,
+    "likes": ["user_2", "user_4"],
+    "createdAt": "2024-01-15T09:30:00Z"
+  },
+  {
+    "id": "comment_4",
+    "postId": "post_3",
+    "userId": "user_4",
+    "content": "Absolutely stunning! Angkor Wat is on my bucket list. Your photography skills are incredible! 📸",
+    "parentId": null,
+    "likes": ["user_3", "user_1", "user_2"],
+    "createdAt": "2024-01-15T08:00:00Z"
+  },
+  {
+    "id": "comment_5",
+    "postId": "post_4",
+    "userId": "user_5",
+    "content": "Great reminder about mental wellness! I start my mornings with meditation too. It makes such a difference.",
+    "parentId": null,
+    "likes": ["user_4", "user_2"],
+    "createdAt": "2024-01-15T07:00:00Z"
+  }
+]

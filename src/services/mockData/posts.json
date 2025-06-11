@@ -1,0 +1,79 @@
+[
+  {
+    "id": "post_1",
+    "userId": "user_1",
+    "content": "Just shipped a new feature that I'm really excited about! The new real-time notifications system is working flawlessly. There's nothing quite like the feeling of seeing your code come to life in production. 🚀",
+    "imageUrls": ["https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=600&h=400&fit=crop"],
+    "videoUrl": null,
+    "likes": ["user_2", "user_3", "user_4", "user_5"],
+    "commentCount": 12,
+    "createdAt": "2024-01-15T10:30:00Z",
+    "isDeleted": false
+  },
+  {
+    "id": "post_2",
+    "userId": "user_2",
+    "content": "Working on a new design system that will make our product more accessible and consistent. The color palette is inspired by nature - soft greens, warm oranges, and calming blues. Can't wait to share the full case study!",
+    "imageUrls": ["https://images.unsplash.com/photo-1541462608143-67571c6738dd?w=600&h=400&fit=crop", "https://images.unsplash.com/photo-1558655146-d09347e92766?w=600&h=400&fit=crop"],
+    "videoUrl": null,
+    "likes": ["user_1", "user_3", "user_5"],
+    "commentCount": 8,
+    "createdAt": "2024-01-15T09:15:00Z",
+    "isDeleted": false
+  },
+  {
+    "id": "post_3",
+    "userId": "user_3",
+    "content": "Golden hour at Angkor Wat was absolutely magical. The way the light hits the ancient stones creates this incredible atmosphere that photos can barely capture. Sometimes you just have to be present in the moment and soak it all in.",
+    "imageUrls": ["https://images.unsplash.com/photo-1539650116574-75c0c6d73ab2?w=600&h=400&fit=crop"],
+    "videoUrl": null,
+    "likes": ["user_1", "user_2", "user_4", "user_5"],
+    "commentCount": 24,
+    "createdAt": "2024-01-15T07:45:00Z",
+    "isDeleted": false
+  },
+  {
+    "id": "post_4",
+    "userId": "user_4",
+    "content": "Morning yoga session complete! 🧘‍♀️ Starting the day with mindful movement and deep breathing sets such a positive tone. Remember, fitness isn't just about the physical - it's about mental wellness too. What's your favorite way to start the morning?",
+    "imageUrls": ["https://images.unsplash.com/photo-1506629905853-6cdaa0344abd?w=600&h=400&fit=crop"],
+    "videoUrl": null,
+    "likes": ["user_1", "user_2", "user_3"],
+    "commentCount": 15,
+    "createdAt": "2024-01-15T06:30:00Z",
+    "isDeleted": false
+  },
+  {
+    "id": "post_5",
+    "userId": "user_5",
+    "content": "Sunday meal prep is done! This week's menu features roasted vegetables, quinoa bowls, and my famous homemade hummus. Cooking for the family brings me so much joy, especially when I see my kids trying new foods and actually enjoying them! 👨‍🍳",
+    "imageUrls": ["https://images.unsplash.com/photo-1547592180-85f173990554?w=600&h=400&fit=crop", "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=600&h=400&fit=crop"],
+    "videoUrl": null,
+    "likes": ["user_2", "user_4"],
+    "commentCount": 7,
+    "createdAt": "2024-01-14T16:20:00Z",
+    "isDeleted": false
+  },
+  {
+    "id": "post_6",
+    "userId": "user_1",
+    "content": "Late night coding session with some smooth jazz in the background. Working on a personal project that combines my love for music and technology. Sometimes the best ideas come when the world is quiet and you can just focus. What's your ideal creative environment?",
+    "imageUrls": [],
+    "videoUrl": null,
+    "likes": ["user_3", "user_5"],
+    "commentCount": 5,
+    "createdAt": "2024-01-14T23:45:00Z",
+    "isDeleted": false
+  },
+  {
+    "id": "post_7",
+    "userId": "user_2",
+    "content": "Color theory study session! 🎨 Exploring how different color combinations can evoke specific emotions and guide user behavior. The psychology behind design choices is fascinating - every hue, saturation, and brightness level tells a story.",
+    "imageUrls": ["https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=600&h=400&fit=crop"],
+    "videoUrl": null,
+    "likes": ["user_1", "user_4", "user_5"],
+    "commentCount": 11,
+    "createdAt": "2024-01-14T14:30:00Z",
+    "isDeleted": false
+  }
+]
