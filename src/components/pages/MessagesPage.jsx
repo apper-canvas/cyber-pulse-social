@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
-import { MessageCircle, Search, Plus, Send, MoreVertical, Phone, Video, ArrowLeft, User } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { MessageCircle, Search, Plus, Send, MoreVertical, Phone, Video, ArrowLeft, User, Smile } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { ChatService, MessageService } from '@/services';
 import userService from '@/services/api/userService';
+import EmojiPicker from 'emoji-picker-react';
 const MessagesPage = () => {
   const [conversations, setConversations] = useState([]);
   const [messages, setMessages] = useState([]);
@@ -19,7 +20,9 @@ const [searchResults, setSearchResults] = useState([]);
   const [searchLoading, setSearchLoading] = useState(false);
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
-
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [recentEmojis, setRecentEmojis] = useState([]);
+  const messageInputRef = useRef(null);
   useEffect(() => {
     loadConversations();
   }, []);
@@ -141,6 +144,34 @@ const sendMessage = async (e) => {
     } finally {
       setSendingMessage(false);
     }
+};
+  
+  const onEmojiClick = (emojiObject) => {
+    const emoji = emojiObject.emoji;
+    const input = messageInputRef.current;
+    
+    if (input) {
+      const start = input.selectionStart;
+      const end = input.selectionEnd;
+      const newValue = newMessage.slice(0, start) + emoji + newMessage.slice(end);
+      setNewMessage(newValue);
+      
+      // Set cursor position after emoji
+      setTimeout(() => {
+        input.selectionStart = input.selectionEnd = start + emoji.length;
+        input.focus();
+      }, 0);
+    } else {
+      setNewMessage(prev => prev + emoji);
+    }
+    
+    // Add to recent emojis
+    setRecentEmojis(prev => {
+      const filtered = prev.filter(e => e !== emoji);
+      return [emoji, ...filtered].slice(0, 8);
+    });
+    
+    setShowEmojiPicker(false);
   };
   const searchUsers = async (query) => {
     if (!query.trim()) {
@@ -480,17 +511,50 @@ return (
               ))}
             </div>
 
-            {/* Message Input */}
+{/* Message Input */}
             <form onSubmit={sendMessage} className="p-4 bg-surface border-t border-gray-700">
               <div className="flex items-center space-x-3">
-                <input
-                  type="text"
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  placeholder="Type a message..."
-                  className="flex-1 px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-primary"
-disabled={sendingMessage}
-                />
+                <div className="flex-1 relative">
+                  <input
+                    ref={messageInputRef}
+                    type="text"
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                    placeholder="Type a message..."
+                    className="w-full px-4 py-2 pr-12 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-primary"
+                    disabled={sendingMessage}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 p-1 hover:bg-gray-600 rounded transition-colors"
+                  >
+                    <Smile className="w-5 h-5 text-gray-400 hover:text-gray-200" />
+                  </button>
+                  
+                  {/* Emoji Picker */}
+                  {showEmojiPicker && (
+                    <div className="absolute bottom-full right-0 mb-2 z-50">
+                      <div className="bg-gray-800 rounded-lg shadow-xl border border-gray-600 overflow-hidden">
+                        <EmojiPicker
+                          onEmojiClick={onEmojiClick}
+                          theme="dark"
+                          width={350}
+                          height={400}
+                          searchPlaceholder="Search emojis..."
+                          previewConfig={{
+                            showPreview: false
+                          }}
+                          skinTonesDisabled={true}
+                          style={{
+                            backgroundColor: '#374151',
+                            border: 'none'
+                          }}
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
                 <button
                   type="submit"
                   disabled={!newMessage.trim() || sendingMessage}
@@ -512,6 +576,14 @@ disabled={sendingMessage}
         )}
 </div>
     </div>
+    
+    {/* Click outside to close emoji picker */}
+    {showEmojiPicker && (
+      <div 
+        className="fixed inset-0 z-40" 
+        onClick={() => setShowEmojiPicker(false)}
+      />
+    )}
     </>
   );
 };

@@ -13,7 +13,7 @@ class MessageService {
     return conversationMessages.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
   }
 
-  static async send(messageData) {
+static async send(messageData) {
     await new Promise(resolve => setTimeout(resolve, 300));
     
     const newMessage = {
@@ -23,7 +23,7 @@ class MessageService {
       content: messageData.content,
       timestamp: new Date().toISOString(),
       status: 'sent',
-      type: 'text'
+      type: messageData.type || 'text'
     };
     
     this.data.push(newMessage);
