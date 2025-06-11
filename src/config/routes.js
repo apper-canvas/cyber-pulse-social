@@ -1,44 +1,44 @@
-import Home from '../pages/Home';
-import Explore from '../pages/Explore';
-import Create from '../pages/Create';
-import Notifications from '../pages/Notifications';
-import Profile from '../pages/Profile';
+import HomePage from '@/components/pages/HomePage';
+import ExplorePage from '@/components/pages/ExplorePage';
+import CreatePostPage from '@/components/pages/CreatePostPage';
+import NotificationsPage from '@/components/pages/NotificationsPage';
+import ProfilePage from '@/components/pages/ProfilePage';
 
 export const routes = {
   home: {
     id: 'home',
-    label: 'Home',
+label: 'Home',
     path: '/home',
     icon: 'Home',
-    component: Home
+    component: HomePage
   },
   explore: {
     id: 'explore',
-    label: 'Explore',
+label: 'Explore',
     path: '/explore',
     icon: 'Compass',
-    component: Explore
+    component: ExplorePage
   },
   create: {
     id: 'create',
-    label: 'Create',
+label: 'Create',
     path: '/create',
     icon: 'PlusCircle',
-    component: Create
+    component: CreatePostPage
   },
   notifications: {
     id: 'notifications',
-    label: 'Notifications',
+label: 'Notifications',
     path: '/notifications',
     icon: 'Bell',
-    component: Notifications
+    component: NotificationsPage
   },
   profile: {
     id: 'profile',
-    label: 'Profile',
+label: 'Profile',
     path: '/profile',
     icon: 'User',
-    component: Profile
+    component: ProfilePage
   }
 };
 
