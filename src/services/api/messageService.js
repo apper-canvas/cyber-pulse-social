@@ -23,7 +23,16 @@ static async send(messageData) {
       content: messageData.content,
       timestamp: new Date().toISOString(),
       status: 'sent',
-      type: messageData.type || 'text'
+      type: messageData.type || 'text',
+      ...(messageData.media && {
+        media: {
+          type: messageData.media.type,
+          url: messageData.media.url,
+          fileName: messageData.media.fileName,
+          fileSize: messageData.media.fileSize,
+          thumbnail: messageData.media.thumbnail
+        }
+      })
     };
     
     this.data.push(newMessage);

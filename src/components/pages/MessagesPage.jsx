@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
-import { MessageCircle, Search, Plus, Send, MoreVertical, Phone, Video, ArrowLeft, User, Smile } from 'lucide-react';
+import { MessageCircle, Search, Plus, Send, MoreVertical, Phone, Video, ArrowLeft, User, Smile, Paperclip, X, Download, Play, FileText } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { ChatService, MessageService } from '@/services';
 import userService from '@/services/api/userService';
 import EmojiPicker from 'emoji-picker-react';
+import { useDropzone } from 'react-dropzone';
 const MessagesPage = () => {
   const [conversations, setConversations] = useState([]);
   const [messages, setMessages] = useState([]);
@@ -20,8 +21,11 @@ const [searchResults, setSearchResults] = useState([]);
   const [searchLoading, setSearchLoading] = useState(false);
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [recentEmojis, setRecentEmojis] = useState([]);
+  const [selectedMedia, setSelectedMedia] = useState([]);
+  const [uploadingMedia, setUploadingMedia] = useState(false);
+  const [mediaPreview, setMediaPreview] = useState(null);
   const messageInputRef = useRef(null);
   useEffect(() => {
     loadConversations();
@@ -64,7 +68,7 @@ const [searchResults, setSearchResults] = useState([]);
 
 const sendMessage = async (e) => {
     e.preventDefault();
-    if (!newMessage.trim()) return;
+    if (!newMessage.trim() && selectedMedia.length === 0) return;
     
     // If we have a selected user but no conversation, create the conversation first
     if (selectedUser && !selectedConversation) {
@@ -88,14 +92,23 @@ const sendMessage = async (e) => {
         setSelectedUser(null);
         
         // Send the message
-        const message = await MessageService.send({
+        const messagePayload = {
           conversationId: newChat.id,
-          content: newMessage.trim(),
+          content: newMessage.trim() || 'Shared media',
           senderId: 'current-user'
-        });
+        };
+
+        // Add media if present
+        if (selectedMedia.length > 0) {
+          messagePayload.type = 'media';
+          messagePayload.media = selectedMedia[0]; // For now, send first media file
+        }
+
+        const message = await MessageService.send(messagePayload);
         
         setMessages([message]);
         setNewMessage('');
+        setSelectedMedia([]);
         
         // Update conversation's last message
         setConversations(prev =>
@@ -120,14 +133,24 @@ const sendMessage = async (e) => {
 
     try {
       setSendingMessage(true);
-      const message = await MessageService.send({
+      
+      const messagePayload = {
         conversationId: selectedConversation.id,
-        content: newMessage.trim(),
+        content: newMessage.trim() || 'Shared media',
         senderId: 'current-user'
-      });
+      };
+
+      // Add media if present
+      if (selectedMedia.length > 0) {
+        messagePayload.type = 'media';
+        messagePayload.media = selectedMedia[0]; // For now, send first media file
+      }
+
+      const message = await MessageService.send(messagePayload);
       
       setMessages(prev => [...prev, message]);
       setNewMessage('');
+      setSelectedMedia([]);
       
       // Update conversation's last message
       setConversations(prev =>
@@ -172,6 +195,146 @@ const sendMessage = async (e) => {
     });
     
     setShowEmojiPicker(false);
+};
+
+  // Media upload handling
+  const handleMediaUpload = async (files) => {
+    if (files.length === 0) return;
+    
+    const file = files[0];
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    
+    if (file.size > maxSize) {
+      toast.error('File size must be less than 10MB');
+      return;
+    }
+    
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'video/mp4', 'video/webm', 'application/pdf', 'text/plain'];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error('File type not supported');
+      return;
+    }
+    
+    try {
+      setUploadingMedia(true);
+      
+      // Simulate upload delay
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Create file URL and thumbnail
+      const fileUrl = URL.createObjectURL(file);
+      let thumbnail = null;
+      
+      if (file.type.startsWith('image/')) {
+        thumbnail = fileUrl;
+      } else if (file.type.startsWith('video/')) {
+        // In a real app, you'd generate a video thumbnail
+        thumbnail = '/api/placeholder/150/150';
+      }
+      
+      const mediaFile = {
+        type: file.type.startsWith('image/') ? 'image' : file.type.startsWith('video/') ? 'video' : 'document',
+        url: fileUrl,
+        fileName: file.name,
+        fileSize: file.size,
+        thumbnail
+      };
+      
+      setSelectedMedia([mediaFile]);
+      toast.success('Media uploaded successfully');
+    } catch (error) {
+      toast.error('Failed to upload media');
+    } finally {
+      setUploadingMedia(false);
+    }
+  };
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop: handleMediaUpload,
+    accept: {
+      'image/*': ['.jpeg', '.jpg', '.png', '.gif'],
+      'video/*': ['.mp4', '.webm'],
+      'application/pdf': ['.pdf'],
+      'text/plain': ['.txt']
+    },
+    maxFiles: 1,
+    disabled: uploadingMedia || sendingMessage
+  });
+
+  const removeSelectedMedia = () => {
+    setSelectedMedia([]);
+  };
+
+  const formatFileSize = (bytes) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
+  const renderMediaContent = (message) => {
+    if (!message.media) return null;
+    
+    const { media } = message;
+    
+    if (media.type === 'image') {
+      return (
+        <div className="media-message">
+          <img 
+            src={media.url} 
+            alt={media.fileName}
+            className="cursor-pointer hover:opacity-90 transition-opacity"
+            onClick={() => setMediaPreview(media)}
+          />
+          <div className="p-2 bg-gray-800 bg-opacity-50">
+            <p className="text-xs text-gray-300">{media.fileName}</p>
+          </div>
+        </div>
+      );
+    }
+    
+    if (media.type === 'video') {
+      return (
+        <div className="media-message">
+          <div className="relative">
+            <video 
+              src={media.url}
+              className="cursor-pointer"
+              onClick={() => setMediaPreview(media)}
+            />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="bg-black bg-opacity-50 rounded-full p-3">
+                <Play className="w-6 h-6 text-white" />
+              </div>
+            </div>
+          </div>
+          <div className="p-2 bg-gray-800 bg-opacity-50">
+            <p className="text-xs text-gray-300">{media.fileName}</p>
+          </div>
+        </div>
+      );
+    }
+    
+    if (media.type === 'document') {
+      return (
+        <div className="flex items-center p-3 bg-gray-700 rounded-lg max-w-xs">
+          <FileText className="w-8 h-8 text-primary mr-3" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-white truncate">{media.fileName}</p>
+            <p className="text-xs text-gray-400">{formatFileSize(media.fileSize)}</p>
+          </div>
+          <button 
+            onClick={() => window.open(media.url, '_blank')}
+            className="ml-2 p-1 hover:bg-gray-600 rounded"
+          >
+            <Download className="w-4 h-4 text-gray-300" />
+          </button>
+        </div>
+      );
+    }
+    
+    return null;
   };
   const searchUsers = async (query) => {
     if (!query.trim()) {
@@ -486,7 +649,7 @@ return (
               </div>
             </div>
 
-            {/* Messages */}
+{/* Messages */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
               {messages.map((message) => (
                 <div
@@ -494,18 +657,38 @@ return (
                   className={`flex ${message.senderId === 'current-user' ? 'justify-end' : 'justify-start'}`}
                 >
                   <div
-                    className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                    className={`max-w-xs lg:max-w-md ${
                       message.senderId === 'current-user'
                         ? 'bg-gradient-to-r from-primary to-secondary text-white'
                         : 'bg-gray-700 text-white'
-                    }`}
+                    } ${message.type === 'media' ? 'p-0 overflow-hidden' : 'px-4 py-2'} rounded-lg`}
                   >
-                    <p>{message.content}</p>
-                    <p className={`text-xs mt-1 ${
-                      message.senderId === 'current-user' ? 'text-purple-100' : 'text-gray-400'
-                    }`}>
-                      {formatTime(message.timestamp)}
-                    </p>
+                    {message.type === 'media' ? (
+                      <div>
+                        {renderMediaContent(message)}
+                        {message.content !== 'Shared media' && (
+                          <div className="px-4 py-2">
+                            <p>{message.content}</p>
+                          </div>
+                        )}
+                        <div className="px-4 py-2">
+                          <p className={`text-xs ${
+                            message.senderId === 'current-user' ? 'text-purple-100' : 'text-gray-400'
+                          }`}>
+                            {formatTime(message.timestamp)}
+                          </p>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <p>{message.content}</p>
+                        <p className={`text-xs mt-1 ${
+                          message.senderId === 'current-user' ? 'text-purple-100' : 'text-gray-400'
+                        }`}>
+                          {formatTime(message.timestamp)}
+                        </p>
+                      </>
+                    )}
                   </div>
                 </div>
               ))}
@@ -513,6 +696,58 @@ return (
 
 {/* Message Input */}
             <form onSubmit={sendMessage} className="p-4 bg-surface border-t border-gray-700">
+              {/* Media Preview */}
+              {selectedMedia.length > 0 && (
+                <div className="mb-3 p-3 bg-gray-700 rounded-lg">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-gray-300">Media to send:</span>
+                    <button
+                      type="button"
+                      onClick={removeSelectedMedia}
+                      className="text-gray-400 hover:text-white"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    {selectedMedia[0].type === 'image' && (
+                      <img 
+                        src={selectedMedia[0].url} 
+                        alt={selectedMedia[0].fileName}
+                        className="w-12 h-12 rounded object-cover"
+                      />
+                    )}
+                    {selectedMedia[0].type === 'video' && (
+                      <div className="w-12 h-12 bg-gray-600 rounded flex items-center justify-center">
+                        <Play className="w-6 h-6 text-gray-300" />
+                      </div>
+                    )}
+                    {selectedMedia[0].type === 'document' && (
+                      <div className="w-12 h-12 bg-gray-600 rounded flex items-center justify-center">
+                        <FileText className="w-6 h-6 text-gray-300" />
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-white truncate">{selectedMedia[0].fileName}</p>
+                      <p className="text-xs text-gray-400">{formatFileSize(selectedMedia[0].fileSize)}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Upload Progress */}
+              {uploadingMedia && (
+                <div className="mb-3 p-3 bg-gray-700 rounded-lg">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm text-gray-300">Uploading media...</span>
+                    <span className="text-xs text-gray-400">Please wait</span>
+                  </div>
+                  <div className="w-full bg-gray-600 rounded-full h-2 upload-progress-bar">
+                    <div className="bg-gradient-to-r from-primary to-secondary h-2 rounded-full"></div>
+                  </div>
+                </div>
+              )}
+
               <div className="flex items-center space-x-3">
                 <div className="flex-1 relative">
                   <input
@@ -521,16 +756,29 @@ return (
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
                     placeholder="Type a message..."
-                    className="w-full px-4 py-2 pr-12 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-primary"
-                    disabled={sendingMessage}
+                    className="w-full px-4 py-2 pr-20 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-primary"
+                    disabled={sendingMessage || uploadingMedia}
                   />
-                  <button
-                    type="button"
-                    onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 p-1 hover:bg-gray-600 rounded transition-colors"
-                  >
-                    <Smile className="w-5 h-5 text-gray-400 hover:text-gray-200" />
-                  </button>
+                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center space-x-1">
+                    <div {...getRootProps()}>
+                      <input {...getInputProps()} />
+                      <button
+                        type="button"
+                        className={`p-1 hover:bg-gray-600 rounded transition-colors ${uploadingMedia ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        disabled={uploadingMedia || sendingMessage}
+                      >
+                        <Paperclip className="w-5 h-5 text-gray-400 hover:text-gray-200" />
+                      </button>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                      className="p-1 hover:bg-gray-600 rounded transition-colors"
+                      disabled={uploadingMedia || sendingMessage}
+                    >
+                      <Smile className="w-5 h-5 text-gray-400 hover:text-gray-200" />
+                    </button>
+                  </div>
                   
                   {/* Emoji Picker */}
                   {showEmojiPicker && (
@@ -557,12 +805,22 @@ return (
                 </div>
                 <button
                   type="submit"
-                  disabled={!newMessage.trim() || sendingMessage}
+                  disabled={(!newMessage.trim() && selectedMedia.length === 0) || sendingMessage || uploadingMedia}
                   className="p-2 bg-gradient-to-r from-primary to-secondary text-white rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Send className="w-5 h-5" />
                 </button>
               </div>
+
+              {/* Drag and Drop Overlay */}
+              {isDragActive && (
+                <div className="absolute inset-0 bg-primary bg-opacity-10 border-2 border-dashed border-primary rounded-lg flex items-center justify-center z-10">
+                  <div className="text-center">
+                    <Paperclip className="w-8 h-8 text-primary mx-auto mb-2" />
+                    <p className="text-primary font-medium">Drop media file here</p>
+                  </div>
+                </div>
+              )}
             </form>
           </>
         ) : (
@@ -577,12 +835,48 @@ return (
 </div>
     </div>
     
-    {/* Click outside to close emoji picker */}
+{/* Click outside to close emoji picker */}
     {showEmojiPicker && (
       <div 
         className="fixed inset-0 z-40" 
         onClick={() => setShowEmojiPicker(false)}
       />
+    )}
+
+    {/* Media Preview Modal */}
+    {mediaPreview && (
+      <div className="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4">
+        <div className="relative max-w-4xl max-h-full">
+          <button
+            onClick={() => setMediaPreview(null)}
+            className="absolute top-4 right-4 z-10 p-2 bg-black bg-opacity-50 rounded-full text-white hover:bg-opacity-75"
+          >
+            <X className="w-6 h-6" />
+          </button>
+          
+          {mediaPreview.type === 'image' && (
+            <img 
+              src={mediaPreview.url} 
+              alt={mediaPreview.fileName}
+              className="max-w-full max-h-full object-contain animate-media-preview"
+            />
+          )}
+          
+          {mediaPreview.type === 'video' && (
+            <video 
+              src={mediaPreview.url}
+              controls
+              autoPlay
+              className="max-w-full max-h-full animate-media-preview"
+            />
+          )}
+          
+          <div className="absolute bottom-4 left-4 right-4 bg-black bg-opacity-50 rounded-lg p-3">
+            <p className="text-white font-medium">{mediaPreview.fileName}</p>
+            <p className="text-gray-300 text-sm">{formatFileSize(mediaPreview.fileSize)}</p>
+          </div>
+        </div>
+      </div>
     )}
     </>
   );
