@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import ProfileCoverAndAvatar from '@/components/organisms/ProfileCoverAndAvatar';
 import ProfileInfo from '@/components/organisms/ProfileInfo';
 import ProfileContentTabs from '@/components/organisms/ProfileContentTabs';
@@ -13,16 +13,19 @@ import FollowService from '@/services/api/followService';
 
 const ProfilePage = () => {
   const navigate = useNavigate();
+  const { userId } = useParams();
   const [user, setUser] = useState(null);
   const [posts, setPosts] = useState([]);
   const [followers, setFollowers] = useState([]);
   const [following, setFollowing] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [isOwnProfile, setIsOwnProfile] = useState(true);
+  const currentUserId = 'current_user'; // In real app, get from auth context
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [userId]);
 
   const loadData = async () => {
     setLoading(true);
@@ -34,14 +37,27 @@ const ProfilePage = () => {
         FollowService.getAll()
       ]);
 
-      const currentUser = usersData[0];
-      setUser(currentUser);
+      // Determine which user profile to show
+      let targetUser;
+      if (userId) {
+        targetUser = usersData.find(u => u.id === userId);
+        setIsOwnProfile(userId === currentUserId);
+      } else {
+        targetUser = usersData.find(u => u.id === currentUserId) || usersData[0];
+        setIsOwnProfile(true);
+      }
 
-      const userPosts = postsData.filter(post => post.userId === currentUser.id);
+      if (!targetUser) {
+        throw new Error('User not found');
+      }
+
+      setUser(targetUser);
+
+      const userPosts = postsData.filter(post => post.userId === targetUser.id);
       setPosts(userPosts);
 
-      const userFollowers = followsData.filter(follow => follow.followingId === currentUser.id);
-      const userFollowing = followsData.filter(follow => follow.followerId === currentUser.id);
+      const userFollowers = followsData.filter(follow => follow.followingId === targetUser.id);
+      const userFollowing = followsData.filter(follow => follow.followerId === targetUser.id);
 
       setFollowers(userFollowers);
       setFollowing(userFollowing);
@@ -78,6 +94,8 @@ const ProfilePage = () => {
           postsCount={posts.length}
           followersCount={user?.followersCount || followers.length}
           followingCount={user?.followingCount || following.length}
+          isOwnProfile={isOwnProfile}
+          currentUserId={currentUserId}
         />
         <ProfileContentTabs posts={posts} navigate={navigate} />
       </div>

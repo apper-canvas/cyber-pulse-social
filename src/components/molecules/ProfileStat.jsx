@@ -1,17 +1,19 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import Button from '@/components/atoms/Button';
 
-const ProfileStat = ({ count, label, onClick }) => {
+const ProfileStat = ({ count, label, onClick, clickable = false }) => {
+  const Component = clickable ? motion.button : 'div';
+  
   return (
-    <Button
-      whileHover={{ scale: 1.05 }}
-      className="text-center"
-      onClick={onClick}
+    <Component
+      onClick={clickable ? onClick : undefined}
+      whileHover={clickable ? { scale: 1.05 } : undefined}
+      whileTap={clickable ? { scale: 0.95 } : undefined}
+      className={`text-center ${clickable ? 'cursor-pointer hover:bg-gray-700/30 p-2 rounded-lg transition-colors' : ''}`}
     >
-      <div className="text-white font-bold text-lg">{count}</div>
-      <div className="text-gray-400 text-sm">{label}</div>
-    </Button>
+      <div className="text-xl font-bold text-white">{count || 0}</div>
+      <div className="text-sm font-medium text-gray-400">{label}</div>
+    </Component>
   );
 };
 
