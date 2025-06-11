@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { MessageCircle, Search, Plus, Send, MoreVertical, Phone, Video, ArrowLeft } from 'lucide-react';
+import { MessageCircle, Search, Plus, Send, MoreVertical, Phone, Video, ArrowLeft, User } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { ChatService, MessageService } from '@/services';
-
+import userService from '@/services/api/userService';
 const MessagesPage = () => {
   const [conversations, setConversations] = useState([]);
   const [messages, setMessages] = useState([]);
@@ -12,9 +12,12 @@ const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [sendingMessage, setSendingMessage] = useState(false);
   const [showMobileChat, setShowMobileChat] = useState(false);
-  const [showNewChatModal, setShowNewChatModal] = useState(false);
+const [showNewChatModal, setShowNewChatModal] = useState(false);
   const [newChatForm, setNewChatForm] = useState({ name: '', avatar: '' });
   const [creatingChat, setCreatingChat] = useState(false);
+const [searchResults, setSearchResults] = useState([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [showSearchResults, setShowSearchResults] = useState(false);
 
   useEffect(() => {
     loadConversations();
@@ -80,12 +83,60 @@ const [newMessage, setNewMessage] = useState('');
       );
       
       toast.success('Message sent');
-    } catch (error) {
+} catch (error) {
       toast.error('Failed to send message');
     } finally {
-setSendingMessage(false);
+      setSendingMessage(false);
     }
   };
+  const searchUsers = async (query) => {
+    if (!query.trim()) {
+      setSearchResults([]);
+      setShowSearchResults(false);
+      return;
+    }
+
+    try {
+      setSearchLoading(true);
+      const results = await userService.searchUsers(query);
+      setSearchResults(results);
+      setShowSearchResults(true);
+    } catch (error) {
+      toast.error('Failed to search users');
+      setSearchResults([]);
+    } finally {
+      setSearchLoading(false);
+    }
+  };
+
+  const handleSearchChange = (e) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+    
+    // Debounce search
+    clearTimeout(window.searchTimeout);
+    window.searchTimeout = setTimeout(() => {
+      searchUsers(query);
+    }, 300);
+  };
+
+  const selectUser = (user) => {
+    setNewChatForm({
+      name: user.displayName || user.username,
+      avatar: user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || user.username)}&background=7C3AED&color=fff`
+    });
+    setSearchQuery('');
+    setShowSearchResults(false);
+    setSearchResults([]);
+  };
+
+  const resetNewChatModal = () => {
+    setShowNewChatModal(false);
+    setNewChatForm({ name: '', avatar: '' });
+    setSearchQuery('');
+    setSearchResults([]);
+    setShowSearchResults(false);
+};
 
   const createNewChat = async (e) => {
     e.preventDefault();
@@ -107,8 +158,7 @@ setSendingMessage(false);
       setShowMobileChat(true);
       
       // Reset form and close modal
-      setNewChatForm({ name: '', avatar: '' });
-      setShowNewChatModal(false);
+      resetNewChatModal();
       
       toast.success('New conversation created');
     } catch (error) {
@@ -116,7 +166,7 @@ setSendingMessage(false);
     } finally {
       setCreatingChat(false);
     }
-};
+  };
 
   const selectConversation = (conversation) => {
     setSelectedConversation(conversation);
@@ -138,14 +188,13 @@ setSendingMessage(false);
     return date.toLocaleDateString();
   };
 
-  if (loading) {
+if (loading) {
     return (
       <div className="flex items-center justify-center h-full">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
-
 return (
     <>
       {/* New Chat Modal */}
@@ -153,13 +202,10 @@ return (
         <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-surface rounded-lg border border-gray-700 w-full max-w-md">
             <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
+<div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-bold text-white">New Conversation</h2>
                 <button
-                  onClick={() => {
-                    setShowNewChatModal(false);
-                    setNewChatForm({ name: '', avatar: '' });
-                  }}
+                  onClick={resetNewChatModal}
                   className="text-gray-400 hover:text-white"
                 >
                   ×
@@ -167,6 +213,59 @@ return (
               </div>
               
               <form onSubmit={createNewChat} className="space-y-4">
+                {/* Search Users */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Search Users
+                  </label>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={handleSearchChange}
+                      placeholder="Search by name or ID..."
+                      className="w-full pl-10 pr-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-primary"
+                      disabled={creatingChat}
+                    />
+                    {searchLoading && (
+                      <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Search Results */}
+                  {showSearchResults && (
+                    <div className="mt-2 max-h-48 overflow-y-auto bg-gray-800 border border-gray-600 rounded-lg">
+                      {searchResults.length === 0 ? (
+                        <div className="p-3 text-center text-gray-400">
+                          <User className="w-6 h-6 mx-auto mb-2" />
+                          <p className="text-sm">No users found</p>
+                        </div>
+                      ) : (
+                        searchResults.map((user) => (
+                          <div
+                            key={user.id}
+                            onClick={() => selectUser(user)}
+                            className="flex items-center p-3 hover:bg-gray-700 cursor-pointer transition-colors"
+                          >
+                            <img
+                              src={user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || user.username)}&background=7C3AED&color=fff`}
+                              alt={user.displayName || user.username}
+                              className="w-8 h-8 rounded-full"
+                            />
+                            <div className="ml-3">
+                              <p className="text-white font-medium">{user.displayName || user.username}</p>
+                              <p className="text-gray-400 text-sm">@{user.username}</p>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  )}
+</div>
+
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">
                     Contact Name
@@ -177,11 +276,10 @@ return (
                     onChange={(e) => setNewChatForm(prev => ({ ...prev, name: e.target.value }))}
                     placeholder="Enter contact name..."
                     className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-primary"
-                    required
                     disabled={creatingChat}
                   />
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-300 mb-2">
                     Avatar URL (optional)
@@ -200,10 +298,7 @@ return (
                 <div className="flex space-x-3 pt-4">
                   <button
                     type="button"
-                    onClick={() => {
-                      setShowNewChatModal(false);
-                      setNewChatForm({ name: '', avatar: '' });
-                    }}
+                    onClick={resetNewChatModal}
                     className="flex-1 px-4 py-2 border border-gray-600 text-gray-300 rounded-lg hover:bg-gray-700 transition-colors"
                     disabled={creatingChat}
                   >
@@ -222,12 +317,11 @@ return (
           </div>
         </div>
       )}
-
     <div className="h-full flex bg-background">
       {/* Conversations List */}
-      <div className={`w-full md:w-80 bg-surface border-r border-gray-700 flex flex-col ${showMobileChat ? 'hidden md:flex' : 'flex'}`}>
+<div className={`w-full md:w-80 bg-surface border-r border-gray-700 flex flex-col ${showMobileChat ? 'hidden md:flex' : 'flex'}`}>
         {/* Header */}
-<div className="p-4 border-b border-gray-700">
+        <div className="p-4 border-b border-gray-700">
           <div className="flex items-center justify-between mb-4">
             <h1 className="text-xl font-bold text-white">Messages</h1>
             <button 
@@ -259,7 +353,7 @@ return (
               <p>No conversations yet</p>
               <p className="text-sm">Start a new conversation</p>
             </div>
-          ) : (
+) : (
             filteredConversations.map((conversation) => (
               <div
                 key={conversation.id}
@@ -278,7 +372,6 @@ return (
                     <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-success rounded-full border-2 border-surface"></div>
                   )}
                 </div>
-
                 <div className="ml-3 flex-1 min-w-0">
                   <div className="flex items-center justify-between">
                     <h3 className="font-medium text-white truncate">{conversation.name}</h3>
@@ -395,8 +488,8 @@ return (
             </div>
           </div>
         )}
-      </div>
 </div>
+    </div>
     </>
   );
 };
