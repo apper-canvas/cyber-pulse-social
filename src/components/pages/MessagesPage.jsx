@@ -293,14 +293,14 @@ return (
       {/* Conversations List */}
 <div className={`w-full md:w-80 bg-surface border-r border-gray-700 flex flex-col ${showMobileChat ? 'hidden md:flex' : 'flex'}`}>
         {/* Header */}
-        <div className="p-4 border-b border-gray-700">
+<div className="p-4 border-b border-gray-700">
           <div className="flex items-center justify-between mb-4">
             <h1 className="text-xl font-bold text-white">Messages</h1>
             <button 
               onClick={() => setShowNewChatModal(true)}
-              className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
+              className="px-3 py-1.5 text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-700 rounded-lg transition-colors"
             >
-              <Plus className="w-5 h-5 text-gray-300" />
+              New Chat
             </button>
           </div>
           
