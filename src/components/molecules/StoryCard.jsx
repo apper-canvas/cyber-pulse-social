@@ -21,17 +21,23 @@ const StoryCard = ({ type = 'user', name, initial, avatarGradient = 'from-accent
           <ApperIcon name="Plus" size={20} className="text-white" />
         </div>
       ) : (
-        <div className="relative">
+<div className="relative">
           <Avatar 
             initial={initial} 
             size="lg" 
-            className="border-2 border-gradient-to-r from-primary to-secondary hover:scale-105 transition-transform" 
+            className={`border-2 transition-all duration-200 hover:scale-105 ${
+              type === 'user' 
+                ? 'border-transparent bg-gradient-to-r from-primary to-secondary p-0.5' 
+                : 'border-gradient-to-r from-primary to-secondary'
+            }`}
             gradient={avatarGradient} 
           />
-          <div className="absolute inset-0 rounded-full bg-gradient-to-r from-primary to-secondary opacity-0 hover:opacity-20 transition-opacity" />
+          {type === 'user' && (
+            <div className="absolute inset-0 rounded-full bg-gradient-to-r from-primary to-secondary opacity-0 hover:opacity-20 transition-opacity" />
+          )}
         </div>
       )}
-<span className="text-xs text-gray-400 max-w-[64px] truncate">{name}</span>
+      <span className="text-xs text-gray-400 max-w-[64px] truncate">{name}</span>
     </motion.div>
   );
 };
