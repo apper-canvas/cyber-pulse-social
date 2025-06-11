@@ -6,52 +6,27 @@ import ProfileStat from '@/components/molecules/ProfileStat';
 import FollowersModal from '@/components/organisms/FollowersModal';
 import FollowService from '@/services/api/followService';
 
-const ProfileInfo = ({ user, postsCount, followersCount, followingCount, isOwnProfile = true, currentUserId }) => {
-  const [isFollowing, setIsFollowing] = useState(false);
-  const [followLoading, setFollowLoading] = useState(false);
-  const [showFollowersModal, setShowFollowersModal] = useState(false);
+const ProfileInfo = ({ 
+  user, 
+  postsCount, 
+  followersCount, 
+  followingCount, 
+  isOwnProfile = true, 
+  currentUserId,
+  isFollowing = false,
+  followLoading = false,
+  onFollow,
+  onOpenFollowersModal
+}) => {
+const [showFollowersModal, setShowFollowersModal] = useState(false);
   const [modalTab, setModalTab] = useState('followers');
-
-  useEffect(() => {
-    if (!isOwnProfile && currentUserId && user?.id) {
-      checkFollowStatus();
-    }
-  }, [user?.id, currentUserId, isOwnProfile]);
-
-  const checkFollowStatus = async () => {
-    try {
-      const following = await FollowService.isFollowing(currentUserId, user.id);
-      setIsFollowing(following);
-    } catch (error) {
-      console.error('Failed to check follow status:', error);
-    }
-  };
-
-  const handleFollow = async () => {
-    setFollowLoading(true);
-    try {
-      if (isFollowing) {
-        await FollowService.delete(currentUserId, user.id);
-        setIsFollowing(false);
-        toast.success(`Unfollowed @${user.username}`);
-      } else {
-        await FollowService.create({
-          followerId: currentUserId,
-          followingId: user.id
-        });
-        setIsFollowing(true);
-        toast.success(`Now following @${user.username}`);
-      }
-    } catch (error) {
-      toast.error(`Failed to ${isFollowing ? 'unfollow' : 'follow'} user`);
-    } finally {
-      setFollowLoading(false);
-    }
-  };
 
   const openFollowersModal = (tab) => {
     setModalTab(tab);
     setShowFollowersModal(true);
+    if (onOpenFollowersModal) {
+      onOpenFollowersModal(tab);
+    }
   };
 
   return (
@@ -77,9 +52,9 @@ const ProfileInfo = ({ user, postsCount, followersCount, followingCount, isOwnPr
               Edit Profile
             </Button>
           ) : (
-            <div className="flex space-x-3">
+<div className="flex space-x-3">
               <Button
-                onClick={handleFollow}
+                onClick={onFollow}
                 disabled={followLoading}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}

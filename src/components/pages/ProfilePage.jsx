@@ -134,13 +134,17 @@ return (
     <div className="h-full overflow-y-auto bg-background">
       <div className="max-w-2xl mx-auto">
         <ProfileCoverAndAvatar user={user} onBackClick={() => navigate('/home')} />
-        <ProfileInfo
+<ProfileInfo
           user={user}
           postsCount={posts.length}
           followersCount={user?.followersCount || followers.length}
           followingCount={user?.followingCount || following.length}
           isOwnProfile={isOwnProfile}
           currentUserId={currentUserId}
+          isFollowing={isFollowing}
+          followLoading={followLoading}
+          onFollow={handleFollow}
+          onOpenFollowersModal={handleOpenFollowersModal}
         />
         <ProfileContentTabs posts={posts} navigate={navigate} />
         
