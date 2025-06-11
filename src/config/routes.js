@@ -3,7 +3,7 @@ import ExplorePage from '@/components/pages/ExplorePage';
 import CreatePostPage from '@/components/pages/CreatePostPage';
 import NotificationsPage from '@/components/pages/NotificationsPage';
 import ProfilePage from '@/components/pages/ProfilePage';
-
+import MessagesPage from '@/components/pages/MessagesPage';
 export const routes = {
   home: {
     id: 'home',
@@ -26,19 +26,26 @@ label: 'Create',
     icon: 'PlusCircle',
     component: CreatePostPage
   },
-  notifications: {
+notifications: {
     id: 'notifications',
-label: 'Notifications',
+    label: 'Notifications',
     path: '/notifications',
     icon: 'Bell',
     component: NotificationsPage
   },
   profile: {
     id: 'profile',
-label: 'Profile',
+    label: 'Profile',
     path: '/profile',
     icon: 'User',
     component: ProfilePage
+  },
+  messages: {
+    id: 'messages',
+    label: 'Messages',
+    path: '/messages',
+    icon: 'MessageCircle',
+    component: MessagesPage
   }
 };
 
