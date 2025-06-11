@@ -41,6 +41,21 @@ body {
                 linear-gradient(45deg, #7C3AED, #EC4899) border-box;
     border: 2px solid transparent;
   }
+
+  /* Tooltip utilities */
+  .tooltip-arrow {
+    content: '';
+    position: absolute;
+    left: -4px;
+    top: 50%;
+    transform: translateY(-50%) rotate(45deg);
+    width: 8px;
+    height: 8px;
+    background: inherit;
+    border: inherit;
+    border-right: none;
+    border-bottom: none;
+  }
 }
 
 /* Custom scrollbar for webkit browsers */

@@ -1,11 +1,42 @@
 import { Outlet, NavLink, useLocation } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect } from 'react';
 import { routeArray } from './config/routes';
 import ApperIcon from './components/ApperIcon';
 
 export default function Layout() {
   const location = useLocation();
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [hoveredItem, setHoveredItem] = useState(null);
+  const [unreadCounts, setUnreadCounts] = useState({
+    messages: 3,
+    notifications: 7
+  });
 
+  // Auto-collapse on medium screens
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 768 && window.innerWidth < 1024) {
+        setIsCollapsed(true);
+      } else if (window.innerWidth >= 1024) {
+        setIsCollapsed(false);
+      }
+    };
+
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const toggleSidebar = () => {
+    setIsCollapsed(!isCollapsed);
+  };
+
+  const getUnreadCount = (routeId) => {
+    if (routeId === 'messages') return unreadCounts.messages;
+    if (routeId === 'notifications') return unreadCounts.notifications;
+    return 0;
+  };
   return (
     <div className="h-screen flex flex-col overflow-hidden bg-background">
       {/* Mobile Bottom Navigation */}
@@ -51,39 +82,134 @@ export default function Layout() {
         </nav>
       </div>
 
-      {/* Desktop Sidebar */}
+{/* Desktop Sidebar */}
       <div className="hidden md:flex flex-1 overflow-hidden">
-        <aside className="w-64 bg-surface/50 backdrop-blur-lg border-r border-gray-700 flex-shrink-0">
+        <motion.aside 
+          animate={{ 
+            width: isCollapsed ? '80px' : '256px'
+          }}
+          transition={{ 
+            duration: 0.3, 
+            ease: 'easeInOut' 
+          }}
+          className="bg-surface/50 backdrop-blur-lg border-r border-gray-700 flex-shrink-0 relative"
+        >
+          {/* Toggle Button */}
+          <button
+            onClick={toggleSidebar}
+            className="absolute -right-3 top-6 w-6 h-6 bg-surface border border-gray-600 rounded-full flex items-center justify-center hover:bg-gray-600 transition-colors z-10 hidden lg:flex"
+          >
+            <ApperIcon 
+              name={isCollapsed ? "ChevronRight" : "ChevronLeft"} 
+              size={14} 
+              className="text-gray-400" 
+            />
+          </button>
+
           <div className="p-6">
-            <div className="flex items-center space-x-3 mb-8">
-              <div className="w-8 h-8 bg-gradient-to-r from-primary to-secondary rounded-lg flex items-center justify-center">
+            {/* Logo */}
+            <motion.div 
+              className="flex items-center mb-8"
+              animate={{ 
+                justifyContent: isCollapsed ? 'center' : 'flex-start' 
+              }}
+            >
+              <div className="w-8 h-8 bg-gradient-to-r from-primary to-secondary rounded-lg flex items-center justify-center flex-shrink-0">
                 <ApperIcon name="Zap" size={18} className="text-white" />
               </div>
-              <span className="text-xl font-display font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                Pulse Social
-              </span>
-            </div>
+              <AnimatePresence>
+                {!isCollapsed && (
+                  <motion.span
+                    initial={{ opacity: 0, width: 0 }}
+                    animate={{ opacity: 1, width: 'auto' }}
+                    exit={{ opacity: 0, width: 0 }}
+                    transition={{ duration: 0.2, delay: 0.1 }}
+                    className="ml-3 text-xl font-display font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent whitespace-nowrap overflow-hidden"
+                  >
+                    Pulse Social
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            </motion.div>
             
+            {/* Navigation */}
             <nav className="space-y-2">
-              {routeArray.map((route) => (
-                <NavLink
-                  key={route.id}
-                  to={route.path}
-                  className={({ isActive }) => `
-                    flex items-center space-x-3 p-3 rounded-xl transition-all duration-200
-                    ${isActive 
-                      ? 'bg-gradient-to-r from-primary/20 to-secondary/20 text-white border border-primary/30' 
-                      : 'text-gray-400 hover:text-white hover:bg-gray-700/50'
-                    }
-                  `}
-                >
-                  <ApperIcon name={route.icon} size={20} />
-                  <span className="font-medium">{route.label}</span>
-                </NavLink>
-              ))}
+              {routeArray.map((route) => {
+                const unreadCount = getUnreadCount(route.id);
+                
+                return (
+                  <div key={route.id} className="relative">
+                    <NavLink
+                      to={route.path}
+                      onMouseEnter={() => setHoveredItem(route.id)}
+                      onMouseLeave={() => setHoveredItem(null)}
+                      className={({ isActive }) => `
+                        flex items-center p-3 rounded-xl transition-all duration-200 relative
+                        ${isActive 
+                          ? 'bg-gradient-to-r from-primary/20 to-secondary/20 text-white border border-primary/30' 
+                          : 'text-gray-400 hover:text-white hover:bg-gray-700/50'
+                        }
+                        ${isCollapsed ? 'justify-center' : 'space-x-3'}
+                      `}
+                    >
+                      <div className="relative flex-shrink-0">
+                        <ApperIcon name={route.icon} size={20} />
+                        {unreadCount > 0 && (
+                          <motion.div
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            className="absolute -top-2 -right-2 w-5 h-5 bg-error rounded-full flex items-center justify-center"
+                          >
+                            <span className="text-xs font-bold text-white">
+                              {unreadCount > 9 ? '9+' : unreadCount}
+                            </span>
+                          </motion.div>
+                        )}
+                      </div>
+                      
+                      <AnimatePresence>
+                        {!isCollapsed && (
+                          <motion.span
+                            initial={{ opacity: 0, width: 0 }}
+                            animate={{ opacity: 1, width: 'auto' }}
+                            exit={{ opacity: 0, width: 0 }}
+                            transition={{ duration: 0.2 }}
+                            className="font-medium whitespace-nowrap overflow-hidden"
+                          >
+                            {route.label}
+                          </motion.span>
+                        )}
+                      </AnimatePresence>
+                    </NavLink>
+
+                    {/* Tooltip for collapsed state */}
+                    <AnimatePresence>
+                      {isCollapsed && hoveredItem === route.id && (
+                        <motion.div
+                          initial={{ opacity: 0, x: -10, scale: 0.8 }}
+                          animate={{ opacity: 1, x: 0, scale: 1 }}
+                          exit={{ opacity: 0, x: -10, scale: 0.8 }}
+                          transition={{ duration: 0.15 }}
+                          className="absolute left-16 top-1/2 transform -translate-y-1/2 z-50"
+                        >
+                          <div className="bg-gray-900 text-white px-3 py-2 rounded-lg text-sm font-medium shadow-lg border border-gray-700 whitespace-nowrap">
+                            {route.label}
+                            {unreadCount > 0 && (
+                              <span className="ml-2 inline-flex items-center justify-center w-5 h-5 bg-error rounded-full text-xs">
+                                {unreadCount > 9 ? '9+' : unreadCount}
+                              </span>
+                            )}
+                            <div className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-1 w-2 h-2 bg-gray-900 border-l border-b border-gray-700 rotate-45"></div>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                );
+              })}
             </nav>
           </div>
-        </aside>
+        </motion.aside>
 
         <main className="flex-1 overflow-y-auto">
           <Outlet />
