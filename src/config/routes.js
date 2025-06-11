@@ -52,4 +52,5 @@ const routes = [
 ];
 
 export default routes;
+export { routes }; // Add named export to match App.jsx import
 export const routeArray = routes;

@@ -1,7 +1,8 @@
+import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import Layout from '@/Layout';
-import { routes, routeArray } from '@/config/routes';
+import routes, { routeArray } from '@/config/routes';
 
 function App() {
   return (
@@ -11,12 +12,12 @@ function App() {
           <Route path="/" element={<Layout />}>
             {routeArray.map(route => (
               <Route
-                key={route.id}
+                key={route.path}
                 path={route.path}
-                element={<route.component />}
+                element={React.createElement(route.element)}
               />
             ))}
-            <Route index element={<routes.home.component />} />
+            <Route index element={React.createElement(routeArray[0].element)} />
             <Route path="*" element={<div className="flex items-center justify-center h-screen text-gray-400">Page not found</div>} />
           </Route>
         </Routes>

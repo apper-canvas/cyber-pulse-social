@@ -4,8 +4,8 @@ export default {
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
-  theme: {
-extend: {
+theme: {
+    extend: {
       colors: {
         primary: '#7C3AED',
         secondary: '#EC4899',
@@ -23,8 +23,8 @@ extend: {
       },
       backdropBlur: {
         xs: '2px'
-      },
-animation: {
+},
+      animation: {
         'slide-in': 'slideIn 0.3s ease-out',
         'slide-out': 'slideOut 0.3s ease-out',
         'fade-in': 'fadeIn 0.2s ease-out',
