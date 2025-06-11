@@ -18,6 +18,7 @@ const [showNewChatModal, setShowNewChatModal] = useState(false);
 const [searchResults, setSearchResults] = useState([]);
   const [searchLoading, setSearchLoading] = useState(false);
   const [showSearchResults, setShowSearchResults] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
 
   useEffect(() => {
     loadConversations();
@@ -58,9 +59,61 @@ const [searchResults, setSearchResults] = useState([]);
     }
   };
 
-  const sendMessage = async (e) => {
+const sendMessage = async (e) => {
     e.preventDefault();
-    if (!newMessage.trim() || !selectedConversation) return;
+    if (!newMessage.trim()) return;
+    
+    // If we have a selected user but no conversation, create the conversation first
+    if (selectedUser && !selectedConversation) {
+      try {
+        setSendingMessage(true);
+        
+        // Create new conversation
+        const newChat = await ChatService.create({
+          name: selectedUser.displayName || selectedUser.username,
+          avatar: selectedUser.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(selectedUser.displayName || selectedUser.username)}&background=7C3AED&color=fff`,
+          participants: ['current-user', selectedUser.id]
+        });
+        
+        // Add to conversations list
+        setConversations(prev => [newChat, ...prev]);
+        
+        // Set as selected conversation
+        setSelectedConversation(newChat);
+        
+        // Clear selected user
+        setSelectedUser(null);
+        
+        // Send the message
+        const message = await MessageService.send({
+          conversationId: newChat.id,
+          content: newMessage.trim(),
+          senderId: 'current-user'
+        });
+        
+        setMessages([message]);
+        setNewMessage('');
+        
+        // Update conversation's last message
+        setConversations(prev =>
+          prev.map(conv =>
+            conv.id === newChat.id
+              ? { ...conv, lastMessage: message.content, lastMessageTime: message.timestamp }
+              : conv
+          )
+        );
+        
+        toast.success('Message sent');
+        return;
+      } catch (error) {
+        toast.error('Failed to send message');
+        setSendingMessage(false);
+        return;
+      }
+    }
+    
+    // Regular message sending for existing conversations
+    if (!selectedConversation) return;
 
     try {
       setSendingMessage(true);
@@ -83,7 +136,7 @@ const [searchResults, setSearchResults] = useState([]);
       );
       
       toast.success('Message sent');
-} catch (error) {
+    } catch (error) {
       toast.error('Failed to send message');
     } finally {
       setSendingMessage(false);
@@ -132,43 +185,37 @@ const selectUser = async (user) => {
       if (existingConversation) {
         // Select existing conversation
         setSelectedConversation(existingConversation);
+        setSelectedUser(null);
         setShowMobileChat(true);
         resetNewChatModal();
         toast.success('Conversation opened');
         return;
       }
       
-      // Create new conversation
-      const newChat = await ChatService.create({
-        name: user.displayName || user.username,
-        avatar: user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || user.username)}&background=7C3AED&color=fff`,
-        participants: ['current-user', user.id]
-      });
-      
-      // Add to conversations list
-      setConversations(prev => [newChat, ...prev]);
-      
-      // Select the new conversation
-      setSelectedConversation(newChat);
+      // Set selected user but don't create conversation yet
+      setSelectedUser(user);
+      setSelectedConversation(null);
+      setMessages([]);
       setShowMobileChat(true);
       
       // Reset modal
       resetNewChatModal();
       
-      toast.success('New conversation created');
+      toast.success('Ready to start conversation');
     } catch (error) {
-      toast.error('Failed to create conversation');
+      toast.error('Failed to select user');
     } finally {
       setCreatingChat(false);
     }
   };
 
-  const resetNewChatModal = () => {
+const resetNewChatModal = () => {
     setShowNewChatModal(false);
     setNewChatForm({ name: '', avatar: '' });
     setSearchQuery('');
     setSearchResults([]);
     setShowSearchResults(false);
+    setSelectedUser(null);
     setCreatingChat(false);
   };
 
@@ -367,11 +414,12 @@ return (
       </div>
 
       {/* Chat Area */}
+{/* Chat Area */}
       <div className={`flex-1 flex flex-col ${!showMobileChat ? 'hidden md:flex' : 'flex'}`}>
-        {selectedConversation ? (
+        {(selectedConversation || selectedUser) ? (
           <>
             {/* Chat Header */}
-            <div className="flex items-center justify-between p-4 bg-surface border-b border-gray-700">
+<div className="flex items-center justify-between p-4 bg-surface border-b border-gray-700">
               <div className="flex items-center">
                 <button
                   onClick={() => setShowMobileChat(false)}
@@ -380,14 +428,16 @@ return (
                   <ArrowLeft className="w-5 h-5 text-gray-300" />
                 </button>
                 <img
-                  src={selectedConversation.avatar}
-                  alt={selectedConversation.name}
+                  src={selectedConversation?.avatar || selectedUser?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent((selectedUser?.displayName || selectedUser?.username) || 'User')}&background=7C3AED&color=fff`}
+                  alt={selectedConversation?.name || selectedUser?.displayName || selectedUser?.username}
                   className="w-10 h-10 rounded-full"
                 />
                 <div className="ml-3">
-                  <h2 className="font-medium text-white">{selectedConversation.name}</h2>
+                  <h2 className="font-medium text-white">
+                    {selectedConversation?.name || selectedUser?.displayName || selectedUser?.username}
+                  </h2>
                   <p className="text-sm text-gray-400">
-                    {selectedConversation.isOnline ? 'Online' : 'Offline'}
+{selectedConversation?.isOnline ? 'Online' : selectedUser ? 'Ready to chat' : 'Offline'}
                   </p>
                 </div>
               </div>
@@ -439,7 +489,7 @@ return (
                   onChange={(e) => setNewMessage(e.target.value)}
                   placeholder="Type a message..."
                   className="flex-1 px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-primary"
-                  disabled={sendingMessage}
+disabled={sendingMessage}
                 />
                 <button
                   type="submit"
