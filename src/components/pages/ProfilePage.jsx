@@ -130,8 +130,8 @@ loadData();
     );
   }
 
-  return (
-<div className="h-full overflow-y-auto bg-background">
+return (
+    <div className="h-full overflow-y-auto bg-background">
       <div className="max-w-2xl mx-auto">
         <ProfileCoverAndAvatar user={user} onBackClick={() => navigate('/home')} />
         <ProfileInfo
@@ -141,10 +141,6 @@ loadData();
           followingCount={user?.followingCount || following.length}
           isOwnProfile={isOwnProfile}
           currentUserId={currentUserId}
-          isFollowing={isFollowing}
-          followLoading={followLoading}
-          onFollow={handleFollow}
-          onOpenFollowersModal={handleOpenFollowersModal}
         />
         <ProfileContentTabs posts={posts} navigate={navigate} />
         
@@ -153,12 +149,12 @@ loadData();
             isOpen={showFollowersModal}
             onClose={handleCloseFollowersModal}
             userId={user?.id}
-            type={modalType}
-            currentUserId={currentUserId}
+            initialTab={modalType}
           />
         )}
       </div>
     </div>
+  );
 };
 
 export default ProfilePage;
