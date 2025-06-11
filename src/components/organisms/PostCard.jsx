@@ -1,19 +1,66 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { formatDistanceToNow } from 'date-fns';
 import UserDisplay from '@/components/molecules/UserDisplay';
 import PostActions from '@/components/molecules/PostActions';
 import CommentInput from '@/components/molecules/CommentInput';
-import ApperIcon from '@/components/ApperIcon'; // Needed for sample comment
+import ApperIcon from '@/components/ApperIcon';
+import CommentService from '@/services/api/commentService';
+import UserService from '@/services/api/userService';
 
 const PostCard = ({ post, currentUser, onLike, onAddComment, likeAnimationActive }) => {
   const [expandedComments, setExpandedComments] = useState(false);
   const [commentText, setCommentText] = useState('');
+  const [comments, setComments] = useState([]);
+  const [commentsLoading, setCommentsLoading] = useState(false);
+  const [commentsError, setCommentsError] = useState(null);
 
   const toggleComments = () => setExpandedComments(prev => !prev);
 
-  const handleCommentSubmit = () => {
-    onAddComment(post.id, commentText);
+  const handleCommentSubmit = async () => {
+    await onAddComment(post.id, commentText);
     setCommentText('');
+    // Refresh comments after adding
+    if (expandedComments) {
+      loadComments();
+    }
+  };
+
+  const loadComments = async () => {
+    setCommentsLoading(true);
+    setCommentsError(null);
+    try {
+      const [commentsData, usersData] = await Promise.all([
+        CommentService.getByPostId(post.id),
+        UserService.getAll()
+      ]);
+
+      const enrichedComments = commentsData.map(comment => {
+        const user = usersData.find(u => u.id === comment.userId);
+        return { ...comment, user };
+      });
+
+      setComments(enrichedComments);
+    } catch (err) {
+      setCommentsError('Failed to load comments');
+      console.error('Error loading comments:', err);
+    } finally {
+      setCommentsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (expandedComments) {
+      loadComments();
+    }
+  }, [expandedComments, post.id]);
+
+  const formatCommentTime = (timestamp) => {
+    try {
+      return formatDistanceToNow(new Date(timestamp), { addSuffix: true });
+    } catch {
+      return 'recently';
+    }
   };
 
   return (
@@ -84,27 +131,65 @@ const PostCard = ({ post, currentUser, onLike, onAddComment, likeAnimationActive
                 onPostComment={handleCommentSubmit}
               />
 
-              {/* Sample Comments (as per original logic, not fetched) */}
+              {/* Real Comments */}
               <div className="space-y-3">
-                <div className="flex space-x-3">
-                  <div className="w-8 h-8 bg-gradient-to-r from-accent to-secondary rounded-full flex items-center justify-center">
-                    <span className="text-white font-bold text-sm">J</span>
+                {commentsLoading && (
+                  <div className="flex items-center justify-center py-4">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                    <span className="ml-2 text-gray-400 text-sm">Loading comments...</span>
                   </div>
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-2">
-                      <span className="font-medium text-white text-sm">johndoe</span>
-                      <span className="text-gray-400 text-xs">2h</span>
-                    </div>
-                    <p className="text-gray-300 text-sm mt-1">Great post! Really love this content 🔥</p>
-                    <div className="flex items-center space-x-4 mt-2">
-                      <button className="text-gray-400 hover:text-red-400 text-xs flex items-center space-x-1">
-                        <ApperIcon name="Heart" size={14} />
-                        <span>12</span>
-                      </button>
-                      <button className="text-gray-400 hover:text-blue-400 text-xs">Reply</button>
-                    </div>
+                )}
+
+                {commentsError && (
+                  <div className="text-center py-4">
+                    <p className="text-red-400 text-sm mb-2">{commentsError}</p>
+                    <button
+                      onClick={loadComments}
+                      className="text-primary hover:text-primary/80 text-sm"
+                    >
+                      Try again
+                    </button>
                   </div>
-                </div>
+                )}
+
+                {!commentsLoading && !commentsError && comments.length === 0 && (
+                  <div className="text-center py-4">
+                    <p className="text-gray-400 text-sm">No comments yet. Be the first to comment!</p>
+                  </div>
+                )}
+
+                {!commentsLoading && !commentsError && comments.map((comment) => (
+                  <motion.div
+                    key={comment.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="flex space-x-3"
+                  >
+                    <div className="w-8 h-8 bg-gradient-to-r from-accent to-secondary rounded-full flex items-center justify-center flex-shrink-0">
+                      <span className="text-white font-bold text-sm">
+                        {comment.user?.username?.[0]?.toUpperCase() || '?'}
+                      </span>
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-2">
+                        <span className="font-medium text-white text-sm">
+                          {comment.user?.username || 'Unknown User'}
+                        </span>
+                        <span className="text-gray-400 text-xs">
+                          {formatCommentTime(comment.createdAt)}
+                        </span>
+                      </div>
+                      <p className="text-gray-300 text-sm mt-1">{comment.content}</p>
+                      <div className="flex items-center space-x-4 mt-2">
+                        <button className="text-gray-400 hover:text-red-400 text-xs flex items-center space-x-1">
+                          <ApperIcon name="Heart" size={14} />
+                          <span>{comment.likes?.length || 0}</span>
+                        </button>
+                        <button className="text-gray-400 hover:text-blue-400 text-xs">Reply</button>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
               </div>
             </div>
           </motion.div>
