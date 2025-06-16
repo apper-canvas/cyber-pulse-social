@@ -4,31 +4,34 @@ import StoryCard from '@/components/molecules/StoryCard';
 import StoryModal from '@/components/organisms/StoryModal';
 import StoryService from '@/services/api/storyService';
 import UserService from '@/services/api/userService';
-
+import FollowService from '@/services/api/followService';
 const StorySection = () => {
   const [stories, setStories] = useState([]);
   const [users, setUsers] = useState([]);
+  const [follows, setFollows] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [showStoryModal, setShowStoryModal] = useState(false);
   const [modalMode, setModalMode] = useState('view'); // 'view' or 'create'
   const [selectedStories, setSelectedStories] = useState([]);
   const [selectedStoryIndex, setSelectedStoryIndex] = useState(0);
-
   useEffect(() => {
     loadData();
   }, []);
 
-  const loadData = async () => {
+const loadData = async () => {
     setLoading(true);
     setError(null);
     try {
-      const [storiesData, usersData] = await Promise.all([
+      const currentUserId = 'user_1'; // Simulate current user
+      const [storiesData, usersData, followsData] = await Promise.all([
         StoryService.getActiveStories(),
-        UserService.getAll()
+        UserService.getAll(),
+        FollowService.getFollowing(currentUserId)
       ]);
       setStories(storiesData);
       setUsers(usersData);
+      setFollows(followsData);
     } catch (err) {
       setError(err.message || 'Failed to load stories');
       toast.error('Failed to load stories');
@@ -68,9 +71,16 @@ const StorySection = () => {
     return users.find(u => u.id === userId) || { displayName: 'Unknown User', username: 'unknown' };
   };
 
-  const getUniqueUserStories = () => {
+const getFollowedUserStories = () => {
+    // Get list of followed user IDs
+    const followedUserIds = follows.map(follow => follow.followingId);
+    
+    // Filter stories to only include followed users
+    const followedStories = stories.filter(story => followedUserIds.includes(story.userId));
+    
+    // Get unique user stories (latest story per user)
     const userStoryMap = new Map();
-    stories.forEach(story => {
+    followedStories.forEach(story => {
       if (!userStoryMap.has(story.userId)) {
         userStoryMap.set(story.userId, story);
       }
@@ -91,7 +101,7 @@ const StorySection = () => {
     );
   }
 
-  const uniqueUserStories = getUniqueUserStories();
+const followedUserStories = getFollowedUserStories();
 
   return (
     <>
@@ -102,7 +112,7 @@ const StorySection = () => {
             name="Your Story" 
             onClick={handleCreateStory}
           />
-          {uniqueUserStories.map((story) => {
+          {followedUserStories.map((story) => {
             const user = getUserById(story.userId);
             return (
               <StoryCard
