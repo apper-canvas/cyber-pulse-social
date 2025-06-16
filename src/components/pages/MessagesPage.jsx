@@ -1,10 +1,10 @@
-import { useState, useEffect, useRef } from 'react';
-import { MessageCircle, Search, Plus, Send, MoreVertical, Phone, Video, ArrowLeft, User, Smile, Paperclip, X, Download, Play, FileText } from 'lucide-react';
-import { toast } from 'react-toastify';
-import { ChatService, MessageService } from '@/services';
-import userService from '@/services/api/userService';
-import EmojiPicker from 'emoji-picker-react';
-import { useDropzone } from 'react-dropzone';
+import React, { useEffect, useRef, useState } from "react";
+import { ArrowLeft, Download, FileText, MessageCircle, MoreVertical, Paperclip, Phone, Play, Plus, Search, Send, Smile, User, Video, X } from "lucide-react";
+import { toast } from "react-toastify";
+import { ChatService, MessageService } from "@/services";
+import userService from "@/services/api/userService";
+import EmojiPicker from "emoji-picker-react";
+import { useDropzone } from "react-dropzone";
 const MessagesPage = () => {
   const [conversations, setConversations] = useState([]);
   const [messages, setMessages] = useState([]);
@@ -441,17 +441,17 @@ if (loading) {
     );
   }
 return (
-    <>
+<>
 {/* New Chat Modal */}
       {showNewChatModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-surface rounded-lg border border-gray-700 w-full max-w-md">
+          <div className="bg-surface rounded-lg border border-gray-200 w-full max-w-md">
             <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-white">Start New Chat</h2>
+<div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-gray-900">Start New Chat</h2>
                 <button
-                  onClick={resetNewChatModal}
-                  className="text-gray-400 hover:text-white"
+onClick={resetNewChatModal}
+                  className="text-gray-500 hover:text-gray-900"
                   disabled={creatingChat}
                 >
                   ×
@@ -459,8 +459,8 @@ return (
               </div>
               
               {/* Search Users */}
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+<div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Search Users
                 </label>
                 <div className="relative">
@@ -469,8 +469,8 @@ return (
                     type="text"
                     value={searchQuery}
                     onChange={handleSearchChange}
-                    placeholder="Search by name or ID..."
-                    className="w-full pl-10 pr-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-primary"
+placeholder="Search by name or ID..."
+                    className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:border-primary"
                     disabled={creatingChat}
                   />
                   {(searchLoading || creatingChat) && (
@@ -481,10 +481,10 @@ return (
                 </div>
                 
                 {/* Search Results */}
-                {showSearchResults && (
-                  <div className="mt-2 max-h-48 overflow-y-auto bg-gray-800 border border-gray-600 rounded-lg">
+{showSearchResults && (
+                  <div className="mt-2 max-h-48 overflow-y-auto bg-gray-50 border border-gray-300 rounded-lg">
                     {searchResults.length === 0 ? (
-                      <div className="p-3 text-center text-gray-400">
+                      <div className="p-3 text-center text-gray-500">
                         <User className="w-6 h-6 mx-auto mb-2" />
                         <p className="text-sm">No users found</p>
                       </div>
@@ -493,10 +493,10 @@ return (
                         <div
                           key={user.id}
                           onClick={() => !creatingChat && selectUser(user)}
-                          className={`flex items-center p-3 transition-colors ${
+className={`flex items-center p-3 transition-colors ${
                             creatingChat 
                               ? 'opacity-50 cursor-not-allowed' 
-                              : 'hover:bg-gray-700 cursor-pointer'
+                              : 'hover:bg-gray-100 cursor-pointer'
                           }`}
                         >
                           <img
@@ -504,9 +504,9 @@ return (
                             alt={user.displayName || user.username}
                             className="w-8 h-8 rounded-full"
                           />
-                          <div className="ml-3">
-                            <p className="text-white font-medium">{user.displayName || user.username}</p>
-                            <p className="text-gray-400 text-sm">@{user.username}</p>
+<div className="ml-3">
+                            <p className="text-gray-900 font-medium">{user.displayName || user.username}</p>
+                            <p className="text-gray-500 text-sm">@{user.username}</p>
                           </div>
                           {creatingChat && (
                             <div className="ml-auto">
@@ -519,8 +519,8 @@ return (
                   </div>
                 )}
                 
-                {!showSearchResults && !searchQuery.trim() && (
-                  <div className="mt-2 p-4 text-center text-gray-400">
+{!showSearchResults && !searchQuery.trim() && (
+                  <div className="mt-2 p-4 text-center text-gray-500">
                     <User className="w-8 h-8 mx-auto mb-2" />
                     <p className="text-sm">Start typing to search for users</p>
                   </div>
@@ -529,17 +529,19 @@ return (
             </div>
           </div>
         </div>
-      )}
+)}
     <div className="h-full flex bg-background">
       {/* Conversations List */}
-<div className={`w-full md:w-80 bg-surface border-r border-gray-700 flex flex-col ${showMobileChat ? 'hidden md:flex' : 'flex'}`}>
+<div className={`w-full md:w-80 bg-surface border-r border-gray-200 flex flex-col ${showMobileChat ? 'hidden md:flex' : 'flex'}`}>
         {/* Header */}
-<div className="p-4 border-b border-gray-700">
+{/* Header */}
+<div className="p-4 border-b border-gray-200">
           <div className="flex items-center justify-between mb-4">
-            <h1 className="text-xl font-bold text-white">Messages</h1>
+<div className="flex items-center justify-between mb-4">
+            <h1 className="text-xl font-bold text-gray-900">Messages</h1>
             <button 
               onClick={() => setShowNewChatModal(true)}
-              className="px-3 py-1.5 text-sm font-medium text-gray-300 hover:text-white hover:bg-gray-700 rounded-lg transition-colors"
+              className="px-3 py-1.5 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
             >
               New Chat
             </button>
@@ -551,9 +553,9 @@ return (
             <input
               type="text"
               placeholder="Search conversations..."
-              value={searchQuery}
+value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-primary"
+              className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:border-primary"
             />
           </div>
         </div>
@@ -570,9 +572,9 @@ return (
             filteredConversations.map((conversation) => (
               <div
                 key={conversation.id}
-                onClick={() => selectConversation(conversation)}
-                className={`flex items-center p-4 hover:bg-gray-700 cursor-pointer transition-colors ${
-                  selectedConversation?.id === conversation.id ? 'bg-gray-700' : ''
+onClick={() => selectConversation(conversation)}
+                className={`flex items-center p-4 hover:bg-gray-50 cursor-pointer transition-colors ${
+                  selectedConversation?.id === conversation.id ? 'bg-gray-50' : ''
                 }`}
               >
                 <div className="relative">
@@ -586,14 +588,14 @@ return (
                   )}
                 </div>
                 <div className="ml-3 flex-1 min-w-0">
-                  <div className="flex items-center justify-between">
-                    <h3 className="font-medium text-white truncate">{conversation.name}</h3>
-                    <span className="text-xs text-gray-400 ml-2">
+<div className="flex items-center justify-between">
+                    <h3 className="font-medium text-gray-900 truncate">{conversation.name}</h3>
+                    <span className="text-xs text-gray-500 ml-2">
                       {formatTime(conversation.lastMessageTime)}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm text-gray-400 truncate">{conversation.lastMessage}</p>
+<div className="flex items-center justify-between">
+                    <p className="text-sm text-gray-500 truncate">{conversation.lastMessage}</p>
                     {conversation.unreadCount > 0 && (
                       <span className="ml-2 px-2 py-1 bg-primary text-white text-xs rounded-full">
                         {conversation.unreadCount}
@@ -612,12 +614,12 @@ return (
       <div className={`flex-1 flex flex-col ${!showMobileChat ? 'hidden md:flex' : 'flex'}`}>
         {(selectedConversation || selectedUser) ? (
           <>
-            {/* Chat Header */}
-<div className="flex items-center justify-between p-4 bg-surface border-b border-gray-700">
+{/* Chat Header */}
+<div className="flex items-center justify-between p-4 bg-surface border-b border-gray-200">
               <div className="flex items-center">
                 <button
-                  onClick={() => setShowMobileChat(false)}
-                  className="md:hidden mr-3 p-1 hover:bg-gray-700 rounded"
+onClick={() => setShowMobileChat(false)}
+                  className="md:hidden mr-3 p-1 hover:bg-gray-100 rounded"
                 >
                   <ArrowLeft className="w-5 h-5 text-gray-300" />
                 </button>
@@ -626,25 +628,25 @@ return (
                   alt={selectedConversation?.name || selectedUser?.displayName || selectedUser?.username}
                   className="w-10 h-10 rounded-full"
                 />
-                <div className="ml-3">
-                  <h2 className="font-medium text-white">
+<div className="ml-3">
+                  <h2 className="font-medium text-gray-900">
                     {selectedConversation?.name || selectedUser?.displayName || selectedUser?.username}
                   </h2>
-                  <p className="text-sm text-gray-400">
+                  <p className="text-sm text-gray-500">
 {selectedConversation?.isOnline ? 'Online' : selectedUser ? 'Ready to chat' : 'Offline'}
                   </p>
                 </div>
               </div>
               
               <div className="flex items-center space-x-2">
-                <button className="p-2 hover:bg-gray-700 rounded-lg transition-colors">
-                  <Phone className="w-5 h-5 text-gray-300" />
+<button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                  <Phone className="w-5 h-5 text-gray-600" />
                 </button>
-                <button className="p-2 hover:bg-gray-700 rounded-lg transition-colors">
-                  <Video className="w-5 h-5 text-gray-300" />
+                <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                  <Video className="w-5 h-5 text-gray-600" />
                 </button>
-                <button className="p-2 hover:bg-gray-700 rounded-lg transition-colors">
-                  <MoreVertical className="w-5 h-5 text-gray-300" />
+                <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                  <MoreVertical className="w-5 h-5 text-gray-600" />
                 </button>
               </div>
             </div>
@@ -695,16 +697,16 @@ return (
             </div>
 
 {/* Message Input */}
-            <form onSubmit={sendMessage} className="p-4 bg-surface border-t border-gray-700">
+            <form onSubmit={sendMessage} className="p-4 bg-surface border-t border-gray-200">
               {/* Media Preview */}
-              {selectedMedia.length > 0 && (
-                <div className="mb-3 p-3 bg-gray-700 rounded-lg">
+{selectedMedia.length > 0 && (
+                <div className="mb-3 p-3 bg-gray-100 rounded-lg">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium text-gray-300">Media to send:</span>
+                    <span className="text-sm font-medium text-gray-700">Media to send:</span>
                     <button
                       type="button"
-                      onClick={removeSelectedMedia}
-                      className="text-gray-400 hover:text-white"
+onClick={removeSelectedMedia}
+                      className="text-gray-500 hover:text-gray-900"
                     >
                       <X className="w-4 h-4" />
                     </button>
@@ -716,33 +718,33 @@ return (
                         alt={selectedMedia[0].fileName}
                         className="w-12 h-12 rounded object-cover"
                       />
-                    )}
+)}
                     {selectedMedia[0].type === 'video' && (
-                      <div className="w-12 h-12 bg-gray-600 rounded flex items-center justify-center">
-                        <Play className="w-6 h-6 text-gray-300" />
+                      <div className="w-12 h-12 bg-gray-200 rounded flex items-center justify-center">
+                        <Play className="w-6 h-6 text-gray-600" />
                       </div>
                     )}
-                    {selectedMedia[0].type === 'document' && (
-                      <div className="w-12 h-12 bg-gray-600 rounded flex items-center justify-center">
-                        <FileText className="w-6 h-6 text-gray-300" />
+{selectedMedia[0].type === 'document' && (
+                      <div className="w-12 h-12 bg-gray-200 rounded flex items-center justify-center">
+                        <FileText className="w-6 h-6 text-gray-600" />
                       </div>
                     )}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm text-white truncate">{selectedMedia[0].fileName}</p>
-                      <p className="text-xs text-gray-400">{formatFileSize(selectedMedia[0].fileSize)}</p>
+<div className="flex-1 min-w-0">
+                      <p className="text-sm text-gray-900 truncate">{selectedMedia[0].fileName}</p>
+                      <p className="text-xs text-gray-500">{formatFileSize(selectedMedia[0].fileSize)}</p>
                     </div>
                   </div>
                 </div>
               )}
 
               {/* Upload Progress */}
-              {uploadingMedia && (
-                <div className="mb-3 p-3 bg-gray-700 rounded-lg">
+{uploadingMedia && (
+                <div className="mb-3 p-3 bg-gray-100 rounded-lg">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-gray-300">Uploading media...</span>
-                    <span className="text-xs text-gray-400">Please wait</span>
-                  </div>
-                  <div className="w-full bg-gray-600 rounded-full h-2 upload-progress-bar">
+                    <span className="text-sm text-gray-700">Uploading media...</span>
+                    <span className="text-xs text-gray-500">Please wait</span>
+</div>
+                  <div className="w-full bg-gray-300 rounded-full h-2 upload-progress-bar">
                     <div className="bg-gradient-to-r from-primary to-secondary h-2 rounded-full"></div>
                   </div>
                 </div>
@@ -755,8 +757,8 @@ return (
                     type="text"
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
-                    placeholder="Type a message..."
-                    className="w-full px-4 py-2 pr-20 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-primary"
+placeholder="Type a message..."
+                    className="w-full px-4 py-2 pr-20 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:border-primary"
                     disabled={sendingMessage || uploadingMedia}
                   />
                   <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center space-x-1">
@@ -764,26 +766,26 @@ return (
                       <input {...getInputProps()} />
                       <button
                         type="button"
-                        className={`p-1 hover:bg-gray-600 rounded transition-colors ${uploadingMedia ? 'opacity-50 cursor-not-allowed' : ''}`}
+className={`p-1 hover:bg-gray-200 rounded transition-colors ${uploadingMedia ? 'opacity-50 cursor-not-allowed' : ''}`}
                         disabled={uploadingMedia || sendingMessage}
                       >
-                        <Paperclip className="w-5 h-5 text-gray-400 hover:text-gray-200" />
+                        <Paperclip className="w-5 h-5 text-gray-600 hover:text-gray-800" />
                       </button>
                     </div>
                     <button
                       type="button"
-                      onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                      className="p-1 hover:bg-gray-600 rounded transition-colors"
+onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                      className="p-1 hover:bg-gray-200 rounded transition-colors"
                       disabled={uploadingMedia || sendingMessage}
                     >
-                      <Smile className="w-5 h-5 text-gray-400 hover:text-gray-200" />
+                      <Smile className="w-5 h-5 text-gray-600 hover:text-gray-800" />
                     </button>
                   </div>
                   
                   {/* Emoji Picker */}
-                  {showEmojiPicker && (
+{showEmojiPicker && (
                     <div className="absolute bottom-full right-0 mb-2 z-50">
-                      <div className="bg-gray-800 rounded-lg shadow-xl border border-gray-600 overflow-hidden">
+                      <div className="bg-white rounded-lg shadow-xl border border-gray-300 overflow-hidden">
                         <EmojiPicker
                           onEmojiClick={onEmojiClick}
                           theme="dark"
@@ -793,9 +795,9 @@ return (
                           previewConfig={{
                             showPreview: false
                           }}
-                          skinTonesDisabled={true}
+skinTonesDisabled={true}
                           style={{
-                            backgroundColor: '#374151',
+                            backgroundColor: '#FFFFFF',
                             border: 'none'
                           }}
                         />

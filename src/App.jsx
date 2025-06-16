@@ -6,8 +6,8 @@ import routes, { routeArray } from '@/config/routes';
 
 function App() {
   return (
-    <BrowserRouter>
-      <div className="min-h-screen bg-background text-white">
+<BrowserRouter>
+      <div className="min-h-screen bg-background text-gray-900">
         <Routes>
           <Route path="/" element={<Layout />}>
             {routeArray.map(route => (
@@ -33,8 +33,8 @@ function App() {
           draggable
           pauseOnHover
           theme="dark"
-          className="z-[9999]"
-          toastClassName="bg-surface border border-gray-700"
+className="z-[9999]"
+          toastClassName="bg-surface border border-gray-200"
           progressClassName="bg-gradient-to-r from-primary to-secondary"
         />
       </div>

@@ -67,7 +67,7 @@ const ExplorePage = () => {
   };
 
   if (loading) {
-    return (
+return (
       <div className="h-full overflow-y-auto bg-background">
         <PageHeader title="Explore" />
         <div className="max-w-4xl mx-auto p-4">
@@ -78,24 +78,25 @@ const ExplorePage = () => {
   }
 
   if (error) {
-    return (
+return (
       <div className="h-full flex items-center justify-center bg-background">
         <ErrorMessage message={error} onRetry={loadData} />
       </div>
     );
   }
 
-  return (
+return (
     <div className="h-full overflow-y-auto bg-background">
       <PageHeader
         title="Explore"
         rightContent={
           <Button
             whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="p-2 hover:bg-gray-700 rounded-full transition-colors"
+whileTap={{ scale: 0.95 }}
+            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
           >
-            <ApperIcon name="Search" size={20} className="text-gray-400" />
+>
+            <ApperIcon name="Search" size={20} className="text-gray-600" />
           </Button>
         }
       />

@@ -6,7 +6,7 @@ import ApperIcon from '@/components/ApperIcon';
 import Button from '@/components/atoms/Button';
 
 const HomePage = () => {
-  return (
+return (
     <div className="h-full overflow-y-auto bg-background">
       <PageHeader
         title="Home Feed"
@@ -14,17 +14,18 @@ const HomePage = () => {
           <div className="flex items-center space-x-3">
             <Button
               whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="p-2 hover:bg-gray-700 rounded-full transition-colors"
+whileTap={{ scale: 0.95 }}
+              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
             >
-              <ApperIcon name="Search" size={20} className="text-gray-400" />
+>
+              <ApperIcon name="Search" size={20} className="text-gray-600" />
             </Button>
             <Button
               whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="p-2 hover:bg-gray-700 rounded-full transition-colors"
+whileTap={{ scale: 0.95 }}
+              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
             >
-              <ApperIcon name="Settings" size={20} className="text-gray-400" />
+              <ApperIcon name="Settings" size={20} className="text-gray-600" />
             </Button>
           </div>
         }

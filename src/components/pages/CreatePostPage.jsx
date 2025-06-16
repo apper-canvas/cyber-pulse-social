@@ -7,7 +7,7 @@ import Button from '@/components/atoms/Button';
 const CreatePostPage = () => {
   const navigate = useNavigate();
 
-  return (
+return (
     <div className="h-full overflow-y-auto bg-background">
       <PageHeader
         title="Create Post"
