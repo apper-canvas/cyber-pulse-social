@@ -41,11 +41,11 @@ export default function Layout() {
     <div className="h-screen flex flex-col overflow-hidden bg-background">
       {/* Mobile Bottom Navigation */}
       <div className="md:hidden order-2 flex-shrink-0">
-        <nav className="bg-surface/80 backdrop-blur-lg border-t border-gray-700">
+<nav className="bg-surface/80 backdrop-blur-lg border-t border-gray-700">
           <div className="flex justify-around items-center py-2">
-            {routeArray.map((route) => (
+            {routeArray.filter(route => !route.hidden).map((route) => (
               <NavLink
-                key={route.id}
+                key={route.path}
                 to={route.path}
                 className={({ isActive }) => `
                   flex flex-col items-center justify-center p-3 rounded-lg transition-all duration-200
@@ -133,15 +133,15 @@ export default function Layout() {
             </motion.div>
             
             {/* Navigation */}
-            <nav className="space-y-2">
-              {routeArray.map((route) => {
-                const unreadCount = getUnreadCount(route.id);
+<nav className="space-y-2">
+              {routeArray.filter(route => !route.hidden).map((route) => {
+                const unreadCount = getUnreadCount(route.path.replace('/', ''));
                 
                 return (
-                  <div key={route.id} className="relative">
-                    <NavLink
+                  <div key={route.path} className="relative">
+<NavLink
                       to={route.path}
-                      onMouseEnter={() => setHoveredItem(route.id)}
+                      onMouseEnter={() => setHoveredItem(route.path)}
                       onMouseLeave={() => setHoveredItem(null)}
                       className={({ isActive }) => `
                         flex items-center p-3 rounded-xl transition-all duration-200 relative
@@ -181,11 +181,11 @@ export default function Layout() {
                         )}
                       </AnimatePresence>
                     </NavLink>
-
-                    {/* Tooltip for collapsed state */}
+{/* Tooltip for collapsed state */}
                     <AnimatePresence>
-                      {isCollapsed && hoveredItem === route.id && (
+                      {isCollapsed && hoveredItem === route.path && (
                         <motion.div
+                          initial={{ opacity: 0, x: -10, scale: 0.8 }}
                           initial={{ opacity: 0, x: -10, scale: 0.8 }}
                           animate={{ opacity: 1, x: 0, scale: 1 }}
                           exit={{ opacity: 0, x: -10, scale: 0.8 }}
